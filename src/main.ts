@@ -7,6 +7,7 @@
 
 import './style.css';
 import { Game } from './core/game.ts';
+import { initPWA } from './pwa/sw-register.ts';
 
 /** Resolução interna do canvas (16:9). */
 const INTERNAL_WIDTH = 1280;
@@ -30,6 +31,10 @@ function init(): void {
   // Criar e iniciar o jogo
   const game = new Game(canvas);
   game.run();
+
+  // Inicializar PWA (Service Worker + prompt de update)
+  // Ref: 03-TECH-STACK.md § 5
+  initPWA();
 }
 
 /**
