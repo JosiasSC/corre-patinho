@@ -6,7 +6,7 @@
  * Ref: 03-TECH-STACK.md § 8 — src/core/game.ts
  */
 
-import type { GameConfig, GameSession, PlayerState, TrackSegment, DuckPose } from '../types/index.ts';
+import type { GameConfig, GameSession, PlayerState, TrackSegment, DuckPose, UpcomingCurve } from '../types/index.ts';
 import { DIFFICULTY_CONFIGS } from '../types/index.ts';
 import { TrackGenerator } from './track.ts';
 import { updatePhysics, checkCurve } from './physics.ts';
@@ -14,6 +14,7 @@ import { InputManager } from './input.ts';
 import { Renderer } from '../rendering/renderer.ts';
 import { DEFAULT_CAMERA } from '../rendering/camera.ts';
 import { generateSeed } from '../utils/prng.ts';
+
 
 /** Duração da pausa de morte (segundos). Ref: § 6.3 */
 const DEATH_PAUSE_DURATION = 1.0;
@@ -24,6 +25,9 @@ const FIXED_DT = 1 / 60;
 /** Lookback de segmentos visíveis para renderização. */
 const VISIBLE_SEGMENTS_BEHIND = 5;
 const VISIBLE_SEGMENTS_AHEAD = 35;
+
+/** Distância de abordagem para sinalização de curvas (unidades do jogo). */
+const CURVE_SIGNAL_DISTANCE = 350;
 
 /**
  * Controla o jogo inteiro: loop, estado, transições.
@@ -41,6 +45,7 @@ export class Game {
   private animFrameId = 0;
 
   private lastCheckedSegmentIndex = -1;
+  private upcomingCurve: UpcomingCurve | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d');
@@ -48,6 +53,7 @@ export class Game {
     this.input = new InputManager(canvas);
     this.renderer = new Renderer(ctx, DEFAULT_CAMERA);
 
+    this.setupMuteHandler(canvas);
     this.initSession();
   }
 
@@ -180,6 +186,9 @@ export class Game {
 
     // Calcular pose visual do patinho
     player.pose = this.computeDuckPose();
+
+    // Calcular próxima curva para sinalização (modo Fácil — § 7)
+    this.upcomingCurve = this.computeUpcomingCurve();
   }
 
   private updateCurrentSegment(): void {
@@ -343,6 +352,87 @@ export class Game {
       segmentStartZs.push(track.getSegmentStartZ(i));
     }
 
-    renderer.renderFrame(session, visibleSegments, segmentStartZs, player);
+    renderer.renderFrame(session, visibleSegments, segmentStartZs, player, this.upcomingCurve);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private — HUD interaction
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Configura handler de click/tap para botão mute do HUD.
+   * Converte coordenadas CSS para coordenadas do canvas.
+   */
+  private setupMuteHandler(canvas: HTMLCanvasElement): void {
+    const handler = (e: MouseEvent | TouchEvent): void => {
+      // Converter coordenadas do evento para espaço do canvas
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      let clientX: number;
+      let clientY: number;
+
+      if ('touches' in e) {
+        if (e.touches.length === 0) return;
+        clientX = e.changedTouches[0].clientX;
+        clientY = e.changedTouches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+
+      const canvasX = (clientX - rect.left) * scaleX;
+      const canvasY = (clientY - rect.top) * scaleY;
+
+      this.renderer.hud.handleClick(canvasX, canvasY);
+    };
+
+    // Click para desktop, touchend para mobile
+    canvas.addEventListener('click', handler);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private — Sinalização de curvas (§ 7)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Busca a próxima curva apex à frente do jogador para sinalização.
+   * Retorna null se não houver curva próxima ou se não for modo Fácil.
+   */
+  private computeUpcomingCurve(): UpcomingCurve | null {
+    const { session, track } = this;
+
+    if (session.config.difficulty !== 'easy') return null;
+
+    const currentZ = session.trackPosition;
+    let accZ = 0;
+
+    // Buscar nos segmentos à frente
+    for (let i = 0; i < track.segments.length; i++) {
+      const seg = track.segments[i];
+      const segStartZ = accZ;
+      accZ += seg.length;
+
+      // Só interessa segmentos à frente
+      if (segStartZ < currentZ) continue;
+
+      const distAhead = segStartZ - currentZ;
+
+      // Só sinalizar dentro da distância de abordagem
+      if (distAhead > CURVE_SIGNAL_DISTANCE) break;
+
+      // Encontrar o próximo apex
+      if (seg.type === 'curve' && seg.phase === 'apex' && seg.requiredIntensity > 0) {
+        return {
+          direction: seg.direction,
+          intensity: seg.requiredIntensity,
+          distanceAhead: distAhead,
+          totalApproachDist: CURVE_SIGNAL_DISTANCE,
+        };
+      }
+    }
+
+    return null;
   }
 }

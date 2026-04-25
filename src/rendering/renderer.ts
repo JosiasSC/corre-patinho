@@ -8,11 +8,12 @@
  * Ref: 03-TECH-STACK.md § 8 — src/rendering/renderer.ts
  */
 
-import type { GameSession, PlayerState, TrackSegment } from '../types/index.ts';
+import type { GameSession, PlayerState, TrackSegment, UpcomingCurve } from '../types/index.ts';
 import { projectTrack } from './camera.ts';
 import type { CameraConfig } from './camera.ts';
-import { drawDuck, drawDuckIcon } from './sprites.ts';
+import { drawDuck } from './sprites.ts';
 import { drawCloud, drawTree, drawFlower, drawMountain, drawSun, drawGrassTuft } from './scenery.ts';
+import { HUD } from '../ui/hud.ts';
 
 // ---------------------------------------------------------------------------
 // Cores do tobogã (estilo água/piscina)
@@ -40,10 +41,12 @@ const SKY_BOTTOM = '#81D4FA';
 export class Renderer {
   private readonly ctx: CanvasRenderingContext2D;
   private readonly cameraConfig: CameraConfig;
+  readonly hud: HUD;
 
   constructor(ctx: CanvasRenderingContext2D, cameraConfig: CameraConfig) {
     this.ctx = ctx;
     this.cameraConfig = cameraConfig;
+    this.hud = new HUD(ctx);
   }
 
   /**
@@ -54,6 +57,7 @@ export class Renderer {
     visibleSegments: TrackSegment[],
     segmentStartZs: number[],
     player: PlayerState,
+    upcomingCurve: UpcomingCurve | null = null,
   ): void {
     const { ctx } = this;
     const w = ctx.canvas.width;
@@ -82,7 +86,7 @@ export class Renderer {
     drawDuck(ctx, duckX, duckY, duckSize, player.pose, player.lean);
 
     // 5. HUD
-    this.drawHUD(session, w, h);
+    this.hud.render(session, upcomingCurve);
   }
 
   /**
@@ -326,42 +330,7 @@ export class Renderer {
     }
   }
 
-  private drawHUD(session: GameSession, w: number, h: number): void {
-    const { ctx } = this;
-    const padding = w * 0.025;
-    const fontSize = Math.round(h * 0.045);
 
-    // Score (canto superior direito)
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'top';
-    ctx.font = `bold ${fontSize}px "Segoe UI", sans-serif`;
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-    ctx.fillText(`${Math.floor(session.maxScore)}m`, w - padding + 2, padding + 2);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-    ctx.shadowBlur = 4;
-    ctx.fillText(`${Math.floor(session.maxScore)}m`, w - padding, padding);
-    ctx.shadowBlur = 0;
-
-    // Vidas (canto superior esquerdo, ícones de patinho)
-    const iconSize = h * 0.04;
-    const iconSpacing = iconSize * 1.6;
-    for (let i = 0; i < 3; i++) {
-      drawDuckIcon(
-        ctx,
-        padding + iconSize + i * iconSpacing,
-        padding + iconSize * 1.2,
-        iconSize,
-        i < session.lives,
-      );
-    }
-
-    // Indicador de velocidade (sutil)
-    ctx.textAlign = 'right';
-    ctx.font = `${Math.round(h * 0.025)}px "Segoe UI", sans-serif`;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-    ctx.fillText(`${session.speed.toFixed(1)}x`, w - padding, padding + fontSize + 8);
-  }
 
   /** Desenha um retângulo arredondado (helper). */
   private roundRect(

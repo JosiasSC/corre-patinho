@@ -225,3 +225,22 @@ export interface ProjectedSegment {
   /** Curvatura neste ponto. */
   curvature: number;
 }
+
+// ---------------------------------------------------------------------------
+// HUD — Sinalização de curvas (modo Fácil)
+// ---------------------------------------------------------------------------
+
+/**
+ * Informação sobre a próxima curva para sinalização no HUD.
+ * Usado exclusivamente no modo Fácil (Ref: 02-GAME-MECHANICS.md § 7).
+ */
+export interface UpcomingCurve {
+  /** Direção da curva. */
+  direction: CurveDirection;
+  /** Intensidade requerida do apex (0–1). */
+  intensity: number;
+  /** Distância em unidades até o início da entry. */
+  distanceAhead: number;
+  /** Distância total de visibilidade do sinal (para fade-in). */
+  totalApproachDist: number;
+}

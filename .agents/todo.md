@@ -18,7 +18,7 @@
 | T-010 | Criar assets de sprites (patinho + cenário) | ✅ Concluído | — |
 | T-011 | Implementar geração procedural do percurso | ✅ Concluído | — |
 | T-012 | Implementar sistema de input (swipe + teclado) | ✅ Concluído | — |
-| T-013 | Implementar HUD (score, vidas, mute) | 🟡 Pendente | Média |
+| T-013 | Implementar HUD (score, vidas, mute) | ✅ Concluído | — |
 | T-014 | Implementar menus (início, dificuldade, game over, high scores) | 🟡 Pendente | Média |
 | T-015 | Integrar Howler.js (música + SFX) | 🟡 Pendente | Média |
 | T-016 | Configurar PWA (service worker, manifest, offline) | 🟡 Pendente | Média |
@@ -52,7 +52,7 @@
 
 ### 🖼️ Implementação — UI & Polish
 
-- `[ ]` **T-013** — HUD: score (distância), vidas (ícones), botão mute, sinalização de curvas (modo Fácil com formas + cores)
+- `[x]` **T-013** — HUD: score (distância), vidas (ícones), botão mute, sinalização de curvas (modo Fácil com formas + cores)
 - `[ ]` **T-014** — Menus: tela inicial, seleção de dificuldade, game over (score, recorde, seed, retry), high scores (top 10 por dificuldade)
 - `[ ]` **T-015** — Áudio: integrar Howler.js, carregar sprites de áudio, música de fundo loop, SFX, estado muted em localStorage
 - `[ ]` **T-016** — PWA: vite-plugin-pwa, manifest (landscape, fullscreen), service worker (cache-first), prompt de update

@@ -13,7 +13,8 @@ O game loop é orquestrado por `Game` (`src/core/game.ts`):
 3. `updateCurrentSegment()` — localiza segmento atual no track
 4. `checkCurrentCurve()` — verifica tolerância de curva (apenas na fase `apex`, a 45% de progresso)
 5. `computeDuckPose()` — determina pose visual do patinho (idle/lean/scared/falling)
-6. `Renderer.renderFrame()` — projeta e desenha tudo
+6. `computeUpcomingCurve()` — busca próxima curva apex para sinalização (modo Fácil)
+7. `Renderer.renderFrame()` — projeta e desenha tudo (inclui HUD via delegação)
 
 **Timestep:** fixed dt (1/60s) com acumulador. Rendering desacoplado da lógica.
 
@@ -33,16 +34,18 @@ ready → playing → dying → playing (respawn)
 
 | Módulo | Arquivo | Responsabilidade |
 |---|---|---|
-| Types | `src/types/index.ts` | Interfaces, tipos, `DuckPose`, `DIFFICULTY_CONFIGS` |
+| Types | `src/types/index.ts` | Interfaces, tipos, `DuckPose`, `UpcomingCurve`, `DIFFICULTY_CONFIGS` |
 | PRNG | `src/utils/prng.ts` | Mulberry32 seedable |
+| Storage | `src/utils/storage.ts` | Persistência localStorage — mute preference (T-013), high scores (T-014) |
 | Track | `src/core/track.ts` | `TrackGenerator` — sub-segmentos entry/apex/exit, S-curves, chicanes, rampa multidimensional |
 | Physics | `src/core/physics.ts` | `updatePhysics`, `checkCurve` — velocidade, inércia, `requiredIntensity` |
 | Input | `src/core/input.ts` | `InputManager` — touch/swipe + teclado + mouse, dead zone, multi-touch rejection (T-012) |
 | Camera | `src/rendering/camera.ts` | `projectTrack` — scanlines pseudo-3D |
 | Sprites | `src/rendering/sprites.ts` | `drawDuck(pose)`, `drawDuckIcon` — Canvas 2D com 5 poses |
 | Scenery | `src/rendering/scenery.ts` | Cenário: nuvens, árvores, flores, montanhas, sol, grama |
-| Renderer | `src/rendering/renderer.ts` | `Renderer` — céu, cenário, tobogã, patinho, HUD |
-| Game | `src/core/game.ts` | `Game` — loop, estados, orquestração |
+| Renderer | `src/rendering/renderer.ts` | `Renderer` — céu, cenário, tobogã, patinho; delega HUD ao módulo `HUD` |
+| HUD | `src/ui/hud.ts` | `HUD` — score, vidas (shake), mute (procedural + hit-test), sinalização de curvas (T-013) |
+| Game | `src/core/game.ts` | `Game` — loop, estados, orquestração, `computeUpcomingCurve`, mute click handler |
 | Main | `src/main.ts` | Entry point, canvas 1280×720, letterboxing |
 
 ## Fluxo de Dados
@@ -71,8 +74,13 @@ Input → rawInput → Physics (inércia) → smoothInput → Camera → Rendere
 - **Swipe dinâmico** — `SWIPE_MAX_DISTANCE = min(vw * 0.15, 150px)`, recalculado no resize (T-012)
 - **Retorno gradual ao centro** — ao soltar input, `direction` não zera; physics.ts aplica decay exponencial ~200ms via `smoothInput` (T-012, § 2.2 + § 4.5)
 - **Rampa quadrática de teclado** — `intensity = (holdTime * rate)²` para controle fino no início (T-012)
+- **HUD como módulo dedicado** — `HUD` instanciada pelo `Renderer` (DI), renderiza score, vidas, mute e sinalização (T-013)
+- **Hit-test canvas para mute** — coordenadas CSS→canvas via `getBoundingClientRect()` + escala, hit area expandida 50% para mobile (T-013)
+- **Mute persistido** — `localStorage` via `storage.ts`, default muted (§ 4 03-TECH-STACK) (T-013)
+- **Sinalização de curvas (Easy)** — seta + gauge + formas por intensidade (leve/média/forte), fade-in/out + pulsação de urgência (T-013)
+- **Acessibilidade na sinalização** — codificação por forma (tamanho do triângulo) + cor + label textual, nunca só cor (P12, § 7) (T-013)
 
 ## Fontes
-- `02-GAME-MECHANICS.md` — mecânicas (input, track, física, vidas)
-- `03-TECH-STACK.md` — stack técnica (renderização, layout, estrutura)
-- Sessão T-009 (2026-04-25), T-010 (2026-04-25), T-011 (2026-04-25), T-012 (2026-04-25)
+- `02-GAME-MECHANICS.md` — mecânicas (input, track, física, vidas, sinalização § 7)
+- `03-TECH-STACK.md` — stack técnica (renderização, layout, estrutura, áudio § 4)
+- Sessão T-009 (2026-04-25), T-010 (2026-04-25), T-011 (2026-04-25), T-012 (2026-04-25), T-013 (2026-04-25)
