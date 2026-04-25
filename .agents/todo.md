@@ -17,7 +17,7 @@
 | T-009 | Implementar protótipo mínimo (Canvas 2D + tobogã reto + swipe) | ✅ Concluído | — |
 | T-010 | Criar assets de sprites (patinho + cenário) | ✅ Concluído | — |
 | T-011 | Implementar geração procedural do percurso | ✅ Concluído | — |
-| T-012 | Implementar sistema de input (swipe + teclado) | 🟡 Pendente | Alta |
+| T-012 | Implementar sistema de input (swipe + teclado) | ✅ Concluído | — |
 | T-013 | Implementar HUD (score, vidas, mute) | 🟡 Pendente | Média |
 | T-014 | Implementar menus (início, dificuldade, game over, high scores) | 🟡 Pendente | Média |
 | T-015 | Integrar Howler.js (música + SFX) | 🟡 Pendente | Média |
@@ -48,7 +48,7 @@
 
 - `[x]` **T-010** — Criar/obter assets de sprites: patinho (idle, curva esquerda, curva direita, susto, queda), tobogã, cenário (árvores, nuvens, etc.)
 - `[x]` **T-011** — Geração procedural: PRNG seedable, segmentos (reto/curva), parâmetros por dificuldade, rampa de dificuldade progressiva
-- `[ ]` **T-012** — Input: captura de touch/swipe full-screen, normalização, suporte a teclado desktop, inércia (~200ms)
+- `[x]` **T-012** — Input: captura de touch/swipe full-screen, normalização, suporte a teclado desktop, inércia (~200ms)
 
 ### 🖼️ Implementação — UI & Polish
 

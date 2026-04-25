@@ -27,9 +27,6 @@ function init(): void {
   resizeCanvas(canvas);
   window.addEventListener('resize', () => resizeCanvas(canvas));
 
-  // Esconder cursor durante gameplay (Ref: 03-TECH-STACK.md § 6.3)
-  canvas.style.cursor = 'pointer';
-
   // Criar e iniciar o jogo
   const game = new Game(canvas);
   game.run();

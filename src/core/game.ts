@@ -108,9 +108,10 @@ export class Game {
     this.animFrameId = requestAnimationFrame(loop);
   }
 
-  /** Para o loop. */
+  /** Para o loop e limpa recursos. */
   stop(): void {
     cancelAnimationFrame(this.animFrameId);
+    this.input.destroy();
   }
 
   // ---------------------------------------------------------------------------
@@ -159,7 +160,7 @@ export class Game {
     // Atualizar rampa de dificuldade no gerador
     track.updateRamp(session.elapsedTime);
 
-    // Capturar input
+    // Capturar input (dead zone já aplicada no InputManager)
     player.rawInput = input.getState().direction;
 
     // Atualizar física (velocidade, posição, inércia)

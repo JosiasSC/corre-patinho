@@ -36,6 +36,11 @@ body {
   display: block;
   border-radius: 4px;
   box-shadow: 0 0 40px rgba(30, 144, 255, 0.3);
+  /* Prevenir scroll/zoom e seleção durante interação — Ref: § 2.3 */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
 }
 
 /* Overlay de aviso para orientação portrait — Ref: 03-TECH-STACK.md § 6.1 */

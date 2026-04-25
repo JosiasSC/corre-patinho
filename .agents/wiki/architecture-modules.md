@@ -37,7 +37,7 @@ ready → playing → dying → playing (respawn)
 | PRNG | `src/utils/prng.ts` | Mulberry32 seedable |
 | Track | `src/core/track.ts` | `TrackGenerator` — sub-segmentos entry/apex/exit, S-curves, chicanes, rampa multidimensional |
 | Physics | `src/core/physics.ts` | `updatePhysics`, `checkCurve` — velocidade, inércia, `requiredIntensity` |
-| Input | `src/core/input.ts` | `InputManager` — touch/swipe + teclado + mouse |
+| Input | `src/core/input.ts` | `InputManager` — touch/swipe + teclado + mouse, dead zone, multi-touch rejection (T-012) |
 | Camera | `src/rendering/camera.ts` | `projectTrack` — scanlines pseudo-3D |
 | Sprites | `src/rendering/sprites.ts` | `drawDuck(pose)`, `drawDuckIcon` — Canvas 2D com 5 poses |
 | Scenery | `src/rendering/scenery.ts` | Cenário: nuvens, árvores, flores, montanhas, sol, grama |
@@ -65,8 +65,14 @@ Input → rawInput → Physics (inércia) → smoothInput → Camera → Rendere
 - **Sprite procedural aprimorado** — patinho desenhado com Canvas 2D em 5 poses: idle, leanLeft, leanRight, scared, falling (T-010)
 - **Cenário Canvas 2D** — sol animado, montanhas, nuvens, árvores, flores e grama nas margens da pista (T-010)
 - **erasableSyntaxOnly** — TypeScript 6+ não permite `private` em parâmetros de construtor; campos devem ser declarados explicitamente
+- **AbortController para listeners** — todos os event listeners registrados via `{ signal }`, canceláveis em `destroy()` para lifecycle limpo (T-012)
+- **Dead zone de input** — `|direction| < 0.05` tratado como 0, com remapeamento da faixa útil para evitar micro-movimentos involuntários (T-012)
+- **Multi-touch rejection** — `activeTouchId` rastreia o primeiro toque; toques adicionais são ignorados (T-012)
+- **Swipe dinâmico** — `SWIPE_MAX_DISTANCE = min(vw * 0.15, 150px)`, recalculado no resize (T-012)
+- **Retorno gradual ao centro** — ao soltar input, `direction` não zera; physics.ts aplica decay exponencial ~200ms via `smoothInput` (T-012, § 2.2 + § 4.5)
+- **Rampa quadrática de teclado** — `intensity = (holdTime * rate)²` para controle fino no início (T-012)
 
 ## Fontes
 - `02-GAME-MECHANICS.md` — mecânicas (input, track, física, vidas)
 - `03-TECH-STACK.md` — stack técnica (renderização, layout, estrutura)
-- Sessão T-009 (2026-04-25), T-010 (2026-04-25), T-011 (2026-04-25)
+- Sessão T-009 (2026-04-25), T-010 (2026-04-25), T-011 (2026-04-25), T-012 (2026-04-25)
