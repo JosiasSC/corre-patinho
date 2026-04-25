@@ -13,6 +13,6 @@ Este diretório contém as especificações autoritativas do projeto.
 
 | Nº | Spec | Escopo | Status |
 |---|---|---|---|
-| 01 | `01-INTENT.md` | Domínio, glossário, decisões iniciais | 🟡 Pendente |
+| 01 | `01-INTENT.md` | Domínio, glossário, decisões iniciais, mecânicas, stack | 🟢 Definido |
 
 > Specs serão adicionadas conforme o projeto for especificado.

@@ -1,6 +1,8 @@
-# corre-patinho
+# corre-patinho 🐤
 
-> **Projeto em fase de especificação.**
+> Jogo casual web (PWA) para crianças de 6+ anos, inspirado no brinquedo "Patinho Escorregador".
+>
+> Controle um patinho descendo um tobogã com curvas aleatórias — ajuste a intensidade das curvas para não cair! Visão em primeira pessoa, 3 níveis de dificuldade, TypeScript, mobile-first.
 
 ## Estrutura do Repositório
 

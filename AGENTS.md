@@ -1,6 +1,6 @@
 # corre-patinho — Contexto para Agentes
 
-> **Projeto em fase de especificação.** O domínio, a stack tecnológica e a arquitetura ainda serão definidos nas specs.
+> Jogo casual web (PWA) para crianças de 6+ anos, inspirado no brinquedo "Patinho Escorregador". TypeScript, mobile-first.
 
 ## Protocolo de Desenvolvimento
 - `.agents/rules/sdd-protocol.md` — Modelo **Spec-Anchored** (LER PRIMEIRO)
