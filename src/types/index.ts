@@ -12,8 +12,45 @@
 /** Nível de dificuldade do jogo. */
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
-/** Estado da partida. */
-export type GameState = 'ready' | 'playing' | 'dying' | 'game-over';
+/** Estado da partida / navegação. */
+export type GameState =
+  | 'title'
+  | 'difficulty-select'
+  | 'high-scores'
+  | 'playing'
+  | 'dying'
+  | 'game-over';
+
+// ---------------------------------------------------------------------------
+// High Scores
+// ---------------------------------------------------------------------------
+
+/** Uma entrada de high score. Ref: 02-GAME-MECHANICS.md § 5 */
+export interface HighScoreEntry {
+  /** Score = distância percorrida. */
+  score: number;
+  /** Seed da partida (compartilhável). */
+  seed: number;
+  /** Data/hora em ISO 8601. */
+  date: string;
+}
+
+/** High scores por dificuldade — top 10 cada. */
+export type HighScores = Record<Difficulty, HighScoreEntry[]>;
+
+// ---------------------------------------------------------------------------
+// Menu Actions (retorno de hit-test)
+// ---------------------------------------------------------------------------
+
+/** Ações retornadas pelo sistema de menus ao detectar clique. */
+export type MenuAction =
+  | { type: 'play' }
+  | { type: 'select-difficulty'; value: Difficulty }
+  | { type: 'show-scores' }
+  | { type: 'show-scores-tab'; value: Difficulty }
+  | { type: 'back' }
+  | { type: 'retry' }
+  | { type: 'menu' };
 
 /** Direção de uma curva no tobogã. */
 export type CurveDirection = 'left' | 'right' | 'none';

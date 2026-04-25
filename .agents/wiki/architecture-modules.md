@@ -21,14 +21,18 @@ O game loop é orquestrado por `Game` (`src/core/game.ts`):
 ## Máquina de Estados
 
 ```
-ready → playing → dying → playing (respawn)
-                 → game-over → ready
+title → difficulty-select → playing → dying → playing (respawn)
+                                     → game-over → title | playing (retry)
+title → high-scores → title
+game-over → high-scores → game-over
 ```
 
-- `ready`: tela de início, aguarda tap/tecla
+- `title`: tela de título com botões Jogar e Recordes
+- `difficulty-select`: 3 cards (Fácil/Normal/Difícil) com descrição e velocidade
 - `playing`: gameplay ativo, lógica + rendering
 - `dying`: flash vermelho, pausa de ~1s, respawn no checkpoint
-- `game-over`: overlay com score, seed, prompt de retry
+- `game-over`: overlay com score, recorde, seed, retry, recordes, menu
+- `high-scores`: top 10 por dificuldade com tabs, botão voltar (contexto-aware)
 
 ## Módulos
 
@@ -43,9 +47,10 @@ ready → playing → dying → playing (respawn)
 | Camera | `src/rendering/camera.ts` | `projectTrack` — scanlines pseudo-3D |
 | Sprites | `src/rendering/sprites.ts` | `drawDuck(pose)`, `drawDuckIcon` — Canvas 2D com 5 poses |
 | Scenery | `src/rendering/scenery.ts` | Cenário: nuvens, árvores, flores, montanhas, sol, grama |
-| Renderer | `src/rendering/renderer.ts` | `Renderer` — céu, cenário, tobogã, patinho; delega HUD ao módulo `HUD` |
+| Renderer | `src/rendering/renderer.ts` | `Renderer` — céu, cenário, tobogã, patinho; delega HUD ao módulo `HUD`; `drawSky()` público para reuso |
 | HUD | `src/ui/hud.ts` | `HUD` — score, vidas (shake), mute (procedural + hit-test), sinalização de curvas (T-013) |
-| Game | `src/core/game.ts` | `Game` — loop, estados, orquestração, `computeUpcomingCurve`, mute click handler |
+| Menus | `src/ui/menus.ts` | `MenuRenderer` — título, dificuldade, game over, high scores; hit-test de botões com bounding rects (T-014) |
+| Game | `src/core/game.ts` | `Game` — loop, 6 estados, orquestração, menus, click handler unificado (T-014) |
 | Main | `src/main.ts` | Entry point, canvas 1280×720, letterboxing |
 
 ## Fluxo de Dados
@@ -79,8 +84,13 @@ Input → rawInput → Physics (inércia) → smoothInput → Camera → Rendere
 - **Mute persistido** — `localStorage` via `storage.ts`, default muted (§ 4 03-TECH-STACK) (T-013)
 - **Sinalização de curvas (Easy)** — seta + gauge + formas por intensidade (leve/média/forte), fade-in/out + pulsação de urgência (T-013)
 - **Acessibilidade na sinalização** — codificação por forma (tamanho do triângulo) + cor + label textual, nunca só cor (P12, § 7) (T-013)
+- **Menus Canvas 2D** — `MenuRenderer` renderiza 4 telas no canvas (sem DOM), registra bounding rects de botões para hit-test (T-014)
+- **Click handler unificado** — `Game.setupClickHandler()` converte CSS→canvas e delega para `MenuRenderer` ou `HUD` conforme estado (T-014)
+- **High scores** — top 10 por dificuldade em localStorage, validação de integridade na leitura, save retorna booleano de recorde (T-014)
+- **Fade-in de telas** — `MenuRenderer` incrementa `fadeAlpha` 0→1 ao trocar de estado para transição suave (T-014)
+- **Contexto-aware back** — `previousState` permite que o botão Voltar de high-scores retorne ao game-over ou ao título (T-014)
 
 ## Fontes
 - `02-GAME-MECHANICS.md` — mecânicas (input, track, física, vidas, sinalização § 7)
 - `03-TECH-STACK.md` — stack técnica (renderização, layout, estrutura, áudio § 4)
-- Sessão T-009 (2026-04-25), T-010 (2026-04-25), T-011 (2026-04-25), T-012 (2026-04-25), T-013 (2026-04-25)
+- Sessão T-009 (2026-04-25), T-010 (2026-04-25), T-011 (2026-04-25), T-012 (2026-04-25), T-013 (2026-04-25), T-014 (2026-04-25)

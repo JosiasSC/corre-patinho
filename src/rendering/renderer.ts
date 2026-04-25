@@ -89,97 +89,6 @@ export class Renderer {
     this.hud.render(session, upcomingCurve);
   }
 
-  /**
-   * Renderiza a tela de "Toque para começar".
-   */
-  renderReadyScreen(): void {
-    const { ctx } = this;
-    const w = ctx.canvas.width;
-    const h = ctx.canvas.height;
-
-    this.drawSky(w, h);
-
-    // Tobogã estático
-    ctx.fillStyle = ROAD_LIGHT;
-    ctx.fillRect(w * 0.25, h * 0.38, w * 0.5, h * 0.62);
-
-    // Bordas
-    ctx.fillStyle = BORDER_LIGHT;
-    ctx.fillRect(w * 0.22, h * 0.38, w * 0.04, h * 0.62);
-    ctx.fillRect(w * 0.74, h * 0.38, w * 0.04, h * 0.62);
-
-    // Patinho
-    drawDuck(ctx, w / 2, h * 0.75, h * 0.22, 'idle', 0);
-
-    // Título
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = `bold ${Math.round(h * 0.08)}px "Segoe UI", sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-    ctx.shadowBlur = 8;
-    ctx.fillText('🐥 Corre Patinho!', w / 2, h * 0.2);
-    ctx.shadowBlur = 0;
-
-    // Subtítulo pulsante
-    const pulse = 0.6 + Math.sin(Date.now() * 0.004) * 0.4;
-    ctx.font = `${Math.round(h * 0.04)}px "Segoe UI", sans-serif`;
-    ctx.fillStyle = `rgba(255, 255, 255, ${pulse})`;
-    ctx.fillText('Toque para começar', w / 2, h * 0.35);
-    ctx.fillStyle = `rgba(255, 255, 255, ${pulse * 0.6})`;
-    ctx.font = `${Math.round(h * 0.025)}px "Segoe UI", sans-serif`;
-    ctx.fillText('Setas ←/→ ou arraste para desviar das curvas', w / 2, h * 0.42);
-  }
-
-  /**
-   * Renderiza a tela de game over.
-   */
-  renderGameOverScreen(session: GameSession): void {
-    const { ctx } = this;
-    const w = ctx.canvas.width;
-    const h = ctx.canvas.height;
-
-    // Fundo escurecido
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    ctx.fillRect(0, 0, w, h);
-
-    // Painel central
-    const panelW = w * 0.5;
-    const panelH = h * 0.55;
-    const panelX = (w - panelW) / 2;
-    const panelY = (h - panelH) / 2;
-
-    ctx.fillStyle = 'rgba(26, 26, 46, 0.92)';
-    ctx.strokeStyle = '#FFEB3B';
-    ctx.lineWidth = 3;
-    this.roundRect(panelX, panelY, panelW, panelH, 16);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    // Título
-    ctx.fillStyle = '#FF5252';
-    ctx.font = `bold ${Math.round(h * 0.07)}px "Segoe UI", sans-serif`;
-    ctx.fillText('Game Over!', w / 2, panelY + panelH * 0.18);
-
-    // Score
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = `${Math.round(h * 0.04)}px "Segoe UI", sans-serif`;
-    ctx.fillText(`Distância: ${Math.floor(session.maxScore)}m`, w / 2, panelY + panelH * 0.4);
-
-    // Seed
-    ctx.fillStyle = '#AAAAAA';
-    ctx.font = `${Math.round(h * 0.025)}px "Segoe UI", sans-serif`;
-    ctx.fillText(`Seed: ${session.seed}`, w / 2, panelY + panelH * 0.55);
-
-    // Retry
-    const pulse = 0.6 + Math.sin(Date.now() * 0.004) * 0.4;
-    ctx.fillStyle = `rgba(255, 235, 59, ${pulse})`;
-    ctx.font = `${Math.round(h * 0.035)}px "Segoe UI", sans-serif`;
-    ctx.fillText('Toque para jogar novamente', w / 2, panelY + panelH * 0.78);
-  }
 
   /**
    * Renderiza flash vermelho de perda de vida.
@@ -196,7 +105,7 @@ export class Renderer {
   // Private
   // ---------------------------------------------------------------------------
 
-  private drawSky(w: number, h: number): void {
+  drawSky(w: number, h: number): void {
     const { ctx } = this;
     const horizonY = h * 0.38;
 
@@ -331,28 +240,6 @@ export class Renderer {
   }
 
 
-
-  /** Desenha um retângulo arredondado (helper). */
-  private roundRect(
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    r: number,
-  ): void {
-    const { ctx } = this;
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-  }
 
   /**
    * Renderiza scanlines de debug (para calibração).

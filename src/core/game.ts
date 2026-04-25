@@ -1,12 +1,12 @@
 /**
  * Game loop, estado da partida, gerenciamento de vidas.
  *
- * Orquestra todos os sistemas: track, physics, input, rendering.
- * Ref: 02-GAME-MECHANICS.md § 4, § 6
+ * Orquestra todos os sistemas: track, physics, input, rendering, menus.
+ * Ref: 02-GAME-MECHANICS.md § 4, § 5, § 6
  * Ref: 03-TECH-STACK.md § 8 — src/core/game.ts
  */
 
-import type { GameConfig, GameSession, PlayerState, TrackSegment, DuckPose, UpcomingCurve } from '../types/index.ts';
+import type { GameConfig, GameSession, PlayerState, TrackSegment, DuckPose, UpcomingCurve, Difficulty, MenuAction } from '../types/index.ts';
 import { DIFFICULTY_CONFIGS } from '../types/index.ts';
 import { TrackGenerator } from './track.ts';
 import { updatePhysics, checkCurve } from './physics.ts';
@@ -14,7 +14,8 @@ import { InputManager } from './input.ts';
 import { Renderer } from '../rendering/renderer.ts';
 import { DEFAULT_CAMERA } from '../rendering/camera.ts';
 import { generateSeed } from '../utils/prng.ts';
-
+import { MenuRenderer } from '../ui/menus.ts';
+import { saveHighScore, getHighScores, getPersonalBest } from '../utils/storage.ts';
 
 /** Duração da pausa de morte (segundos). Ref: § 6.3 */
 const DEATH_PAUSE_DURATION = 1.0;
@@ -30,11 +31,13 @@ const VISIBLE_SEGMENTS_AHEAD = 35;
 const CURVE_SIGNAL_DISTANCE = 350;
 
 /**
- * Controla o jogo inteiro: loop, estado, transições.
+ * Controla o jogo inteiro: loop, estado, transições, menus.
  */
 export class Game {
+  private readonly canvas: HTMLCanvasElement;
   private readonly input: InputManager;
   private readonly renderer: Renderer;
+  private readonly menus: MenuRenderer;
 
   private session!: GameSession;
   private track!: TrackGenerator;
@@ -47,20 +50,34 @@ export class Game {
   private lastCheckedSegmentIndex = -1;
   private upcomingCurve: UpcomingCurve | null = null;
 
+  /** Dificuldade selecionada para a próxima partida. */
+  private selectedDifficulty: Difficulty = 'normal';
+  /** Dificuldade ativa na tela de high scores. */
+  private viewingScoresDifficulty: Difficulty = 'normal';
+  /** Se o último game over bateu recorde. */
+  private isNewRecord = false;
+  /** Recorde pessoal no momento do game over. */
+  private personalBest = 0;
+  /** Estado anterior (para saber voltar de high-scores). */
+  private previousState: 'title' | 'game-over' = 'title';
+
   constructor(canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas 2D context não disponível');
+    this.canvas = canvas;
     this.input = new InputManager(canvas);
     this.renderer = new Renderer(ctx, DEFAULT_CAMERA);
+    this.menus = new MenuRenderer(ctx);
 
-    this.setupMuteHandler(canvas);
+    this.setupClickHandler(canvas);
     this.initSession();
   }
 
-  /** Inicia/reinicia uma partida. */
-  start(seed?: number): void {
+  /** Inicia/reinicia uma partida com dificuldade escolhida. */
+  start(difficulty: Difficulty, seed?: number): void {
     const actualSeed = seed ?? generateSeed();
-    const config = DIFFICULTY_CONFIGS['normal']; // T-009: protótipo usa Normal
+    const config = DIFFICULTY_CONFIGS[difficulty];
+    this.selectedDifficulty = difficulty;
     this.initSessionWithConfig(config, actualSeed);
     this.session.state = 'playing';
     this.lastTimestamp = 0;
@@ -97,17 +114,6 @@ export class Game {
         }
       }
 
-      // Verificar tap para transições de estado
-      if (this.input.tapReceived) {
-        this.input.tapReceived = false;
-        if (this.session.state === 'ready') {
-          this.start();
-        } else if (this.session.state === 'game-over') {
-          this.initSession();
-          this.session.state = 'ready';
-        }
-      }
-
       this.render();
     };
 
@@ -121,13 +127,13 @@ export class Game {
   }
 
   // ---------------------------------------------------------------------------
-  // Private — Logic
+  // Private — Session init
   // ---------------------------------------------------------------------------
 
   private initSession(): void {
     const config = DIFFICULTY_CONFIGS['normal'];
     this.initSessionWithConfig(config, generateSeed());
-    this.session.state = 'ready';
+    this.session.state = 'title';
   }
 
   private initSessionWithConfig(config: GameConfig, seed: number): void {
@@ -156,6 +162,10 @@ export class Game {
       pose: 'idle',
     };
   }
+
+  // ---------------------------------------------------------------------------
+  // Private — Logic
+  // ---------------------------------------------------------------------------
 
   private fixedUpdate(dt: number): void {
     const { session, track, player, input } = this;
@@ -249,10 +259,31 @@ export class Game {
     session.lives--;
 
     if (session.lives <= 0) {
-      session.state = 'game-over';
+      this.onGameOver();
     } else {
       session.state = 'dying';
       session.deathPauseTimer = DEATH_PAUSE_DURATION;
+    }
+  }
+
+  /** Transição para game over: salvar score e verificar recorde. */
+  private onGameOver(): void {
+    const { session } = this;
+    session.state = 'game-over';
+
+    const difficulty = session.config.difficulty;
+    this.personalBest = getPersonalBest(difficulty);
+
+    // Salvar high score
+    this.isNewRecord = saveHighScore(difficulty, {
+      score: session.maxScore,
+      seed: session.seed,
+      date: new Date().toISOString(),
+    });
+
+    // Atualizar personal best se bateu recorde
+    if (this.isNewRecord) {
+      this.personalBest = session.maxScore;
     }
   }
 
@@ -306,17 +337,29 @@ export class Game {
   // ---------------------------------------------------------------------------
 
   private render(): void {
-    const { session, renderer } = this;
+    const { session } = this;
 
-    if (session.state === 'ready') {
-      renderer.renderReadyScreen();
+    // Menu states — delegar para MenuRenderer
+    if (session.state === 'title') {
+      this.menus.renderTitleScreen(() => this.drawSkyHelper());
+      return;
+    }
+
+    if (session.state === 'difficulty-select') {
+      this.menus.renderDifficultySelect(() => this.drawSkyHelper());
+      return;
+    }
+
+    if (session.state === 'high-scores') {
+      const scores = getHighScores();
+      this.menus.renderHighScores(scores, this.viewingScoresDifficulty, () => this.drawSkyHelper());
       return;
     }
 
     if (session.state === 'game-over') {
       // Renderizar frame do jogo congelado + overlay game over
       this.renderGameFrame();
-      renderer.renderGameOverScreen(session);
+      this.menus.renderGameOver(session, this.isNewRecord, this.personalBest);
       return;
     }
 
@@ -325,12 +368,19 @@ export class Game {
       this.player.pose = this.computeDuckPose();
       this.renderGameFrame();
       const intensity = session.deathPauseTimer / DEATH_PAUSE_DURATION;
-      renderer.renderDeathFlash(intensity);
+      this.renderer.renderDeathFlash(intensity);
       return;
     }
 
     // Playing
     this.renderGameFrame();
+  }
+
+  /** Helper para drawSky — expõe para o MenuRenderer. */
+  private drawSkyHelper(): void {
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    this.renderer.drawSky(w, h);
   }
 
   private renderGameFrame(): void {
@@ -356,14 +406,14 @@ export class Game {
   }
 
   // ---------------------------------------------------------------------------
-  // Private — HUD interaction
+  // Private — Click/tap handling (menus + HUD)
   // ---------------------------------------------------------------------------
 
   /**
-   * Configura handler de click/tap para botão mute do HUD.
+   * Configura handler de click/tap unificado para menus e HUD.
    * Converte coordenadas CSS para coordenadas do canvas.
    */
-  private setupMuteHandler(canvas: HTMLCanvasElement): void {
+  private setupClickHandler(canvas: HTMLCanvasElement): void {
     const handler = (e: MouseEvent | TouchEvent): void => {
       // Converter coordenadas do evento para espaço do canvas
       const rect = canvas.getBoundingClientRect();
@@ -374,9 +424,10 @@ export class Game {
       let clientY: number;
 
       if ('touches' in e) {
-        if (e.touches.length === 0) return;
-        clientX = e.changedTouches[0].clientX;
-        clientY = e.changedTouches[0].clientY;
+        if (e.touches.length === 0 && e.changedTouches.length === 0) return;
+        const touch = e.changedTouches[0] || e.touches[0];
+        clientX = touch.clientX;
+        clientY = touch.clientY;
       } else {
         clientX = e.clientX;
         clientY = e.clientY;
@@ -385,11 +436,85 @@ export class Game {
       const canvasX = (clientX - rect.left) * scaleX;
       const canvasY = (clientY - rect.top) * scaleY;
 
-      this.renderer.hud.handleClick(canvasX, canvasY);
+      this.handleClick(canvasX, canvasY);
     };
 
-    // Click para desktop, touchend para mobile
     canvas.addEventListener('click', handler);
+  }
+
+  /**
+   * Processa um clique em coordenadas do canvas.
+   * Delega para menus ou HUD conforme o estado atual.
+   */
+  private handleClick(x: number, y: number): void {
+    const { session } = this;
+
+    // Em estados de menu: delegar para MenuRenderer
+    if (
+      session.state === 'title' ||
+      session.state === 'difficulty-select' ||
+      session.state === 'game-over' ||
+      session.state === 'high-scores'
+    ) {
+      const action = this.menus.handleClick(x, y);
+      if (action) {
+        this.processMenuAction(action);
+        return;
+      }
+    }
+
+    // Em jogo: delegar para HUD (mute button)
+    if (session.state === 'playing' || session.state === 'dying') {
+      this.renderer.hud.handleClick(x, y);
+    }
+  }
+
+  /**
+   * Processa uma ação de menu retornada pelo hit-test.
+   */
+  private processMenuAction(action: MenuAction): void {
+    switch (action.type) {
+      case 'play':
+        // Título → seleção de dificuldade
+        this.session.state = 'difficulty-select';
+        break;
+
+      case 'select-difficulty':
+        // Seleção → iniciar jogo
+        this.selectedDifficulty = action.value;
+        this.start(action.value);
+        break;
+
+      case 'show-scores':
+        // Salvar estado anterior e ir para high scores
+        if (this.session.state === 'game-over') {
+          this.previousState = 'game-over';
+        } else {
+          this.previousState = 'title';
+        }
+        this.viewingScoresDifficulty = this.selectedDifficulty;
+        this.session.state = 'high-scores';
+        break;
+
+      case 'show-scores-tab':
+        this.viewingScoresDifficulty = action.value;
+        break;
+
+      case 'back':
+        // Voltar ao estado anterior
+        this.session.state = this.previousState;
+        break;
+
+      case 'retry':
+        // Retry com mesma dificuldade
+        this.start(this.selectedDifficulty);
+        break;
+
+      case 'menu':
+        // Voltar ao título
+        this.initSession();
+        break;
+    }
   }
 
   // ---------------------------------------------------------------------------
