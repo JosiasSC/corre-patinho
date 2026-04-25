@@ -21,6 +21,12 @@ export type CurveDirection = 'left' | 'right' | 'none';
 /** Tipo de segmento do tobogã. */
 export type SegmentType = 'straight' | 'curve';
 
+/** Fase dentro de uma curva composta (sub-segmentos para transição suave). */
+export type CurvePhase = 'entry' | 'apex' | 'exit' | 'full';
+
+/** Tipo de padrão de percurso gerado. */
+export type TrackPattern = 'simple' | 's-curve' | 'chicane';
+
 /**
  * Pose visual do patinho.
  * Ref: 03-TECH-STACK.md § 3.2 — Animações via troca de frames/sprites.
@@ -37,16 +43,27 @@ export interface TrackSegment {
   /** Direção da curva (none para retos). */
   direction: CurveDirection;
   /**
-   * Intensidade da curvatura requerida (-1 a +1).
+   * Curvatura para renderização (-1 a +1).
    * Negativo = esquerda, positivo = direita, 0 = reto.
+   * Usada pela câmera para projeção visual.
    */
   curvature: number;
+  /**
+   * Intensidade que o jogador precisa aplicar (0–1, valor absoluto).
+   * Usada pela physics para verificação de sucesso na curva.
+   * 0 para segmentos retos e fases entry/exit.
+   */
+  requiredIntensity: number;
   /** Comprimento do segmento em unidades do jogo. */
   length: number;
   /** Se este segmento é um checkpoint. */
   isCheckpoint: boolean;
   /** Índice sequencial no percurso. */
   index: number;
+  /** Fase dentro de uma curva composta. Retos usam 'full'. */
+  phase: CurvePhase;
+  /** Padrão de percurso ao qual este segmento pertence. */
+  pattern: TrackPattern;
 }
 
 // ---------------------------------------------------------------------------
@@ -77,45 +94,64 @@ export interface GameConfig {
   readonly difficultyRampRate: number;
   /** Vidas iniciais. */
   readonly lives: number;
+  /** Coeficiente da rampa para frequência de curvas. */
+  readonly rampCurveFrequencyCoeff: number;
+  /** Coeficiente da rampa para intensidade máxima de curvas. */
+  readonly rampIntensityCoeff: number;
+  /** Coeficiente da rampa para redução de espaçamento. */
+  readonly rampSpacingCoeff: number;
 }
 
-/** Configurações por dificuldade. Ref: 02-GAME-MECHANICS.md § 3.3, § 4.2–4.4, § 6.2 */
+/**
+ * Configurações por dificuldade.
+ * Calibrado para partida média de ~2min (Normal).
+ * Ref: 02-GAME-MECHANICS.md § 3.3, § 4.2–4.4, § 6.2
+ */
 export const DIFFICULTY_CONFIGS: Record<Difficulty, GameConfig> = {
   easy: {
     difficulty: 'easy',
     speedBase: 1.0,
     speedMax: 1.3,
     tolerance: 0.30,
-    curveFrequency: 0.3,
-    curveMaxIntensity: 0.5,
+    curveFrequency: 0.25,
+    curveMaxIntensity: 0.45,
     minStraightBetweenCurves: 3,
     checkpointInterval: 5,
-    difficultyRampRate: 0.002,
+    difficultyRampRate: 0.0015,
     lives: 3,
+    rampCurveFrequencyCoeff: 0.3,
+    rampIntensityCoeff: 0.2,
+    rampSpacingCoeff: 0.1,
   },
   normal: {
     difficulty: 'normal',
     speedBase: 1.0,
     speedMax: 1.5,
     tolerance: 0.20,
-    curveFrequency: 0.45,
-    curveMaxIntensity: 0.7,
+    curveFrequency: 0.40,
+    curveMaxIntensity: 0.65,
     minStraightBetweenCurves: 2,
     checkpointInterval: 8,
-    difficultyRampRate: 0.004,
+    difficultyRampRate: 0.003,
     lives: 3,
+    rampCurveFrequencyCoeff: 0.5,
+    rampIntensityCoeff: 0.3,
+    rampSpacingCoeff: 0.2,
   },
   hard: {
     difficulty: 'hard',
     speedBase: 1.4,
     speedMax: 2.0,
     tolerance: 0.10,
-    curveFrequency: 0.6,
-    curveMaxIntensity: 0.9,
+    curveFrequency: 0.55,
+    curveMaxIntensity: 0.85,
     minStraightBetweenCurves: 1,
     checkpointInterval: 12,
-    difficultyRampRate: 0.006,
+    difficultyRampRate: 0.005,
     lives: 3,
+    rampCurveFrequencyCoeff: 0.5,
+    rampIntensityCoeff: 0.3,
+    rampSpacingCoeff: 0.3,
   },
 };
 

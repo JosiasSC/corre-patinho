@@ -204,12 +204,14 @@ export class Game {
     const { session, track, player } = this;
     const segment = track.getSegment(session.currentSegmentIndex);
 
-    // Só verificar curvas, e só uma vez por segmento, no meio da curva
+    // Só verificar curvas na fase apex (onde requiredIntensity > 0),
+    // e só uma vez por segmento
     if (segment.type !== 'curve') return;
+    if (segment.phase !== 'apex') return;
     if (this.lastCheckedSegmentIndex === session.currentSegmentIndex) return;
 
-    // Verificar quando estiver a ~60% do segmento (dando tempo de ajustar)
-    if (session.segmentProgress < 0.55) return;
+    // Verificar quando estiver a ~50% do apex (dando tempo de ajustar)
+    if (session.segmentProgress < 0.45) return;
 
     this.lastCheckedSegmentIndex = session.currentSegmentIndex;
 

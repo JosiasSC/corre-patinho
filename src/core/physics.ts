@@ -63,21 +63,23 @@ export function updatePhysics(
 
 /**
  * Verifica se o jogador passou pela curva com sucesso.
- * Deve ser chamado quando o jogador está dentro de um segmento curvo.
+ * Usa `requiredIntensity` do segmento (valor absoluto) — apenas
+ * segmentos na fase `apex` possuem requiredIntensity > 0.
  */
 export function checkCurve(
   segment: TrackSegment,
   player: PlayerState,
   config: GameConfig,
 ): CurveCheckResult {
-  if (segment.type === 'straight') {
+  if (segment.type === 'straight' || segment.requiredIntensity === 0) {
     return { passed: true, error: 0 };
   }
 
+  // requiredIntensity é absoluto; curvature tem o sinal da direção
   const required = segment.curvature;
   const applied = player.smoothInput;
   const error = Math.abs(applied - required);
-  const maxError = Math.abs(required) * config.tolerance + 0.08; // tolerância absoluta mínima
+  const maxError = segment.requiredIntensity * config.tolerance + 0.08; // tolerância absoluta mínima
 
   return {
     passed: error <= maxError,
