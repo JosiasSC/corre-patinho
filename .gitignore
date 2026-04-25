@@ -80,14 +80,10 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 .output
 
 # Gatsby files
 .cache/
-# Comment in the public line in if your project uses Gatsby and not Next.js
-# https://nextjs.org/blog/next-9-1#public-directory-support
-# public
 
 # vuepress build output
 .vuepress/dist
@@ -137,7 +133,21 @@ dist
 !.yarn/sdks
 !.yarn/versions
 
-# Vite files
+# Vite
+dist
+dist-ssr
+*.local
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -1,0 +1,70 @@
+/**
+ * Estilos base do Corre Patinho.
+ *
+ * Layout landscape forçado, canvas 16:9 centralizado.
+ * Ref: 03-TECH-STACK.md § 6
+ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #1a1a2e;
+  font-family: sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#game-canvas {
+  display: block;
+  border-radius: 4px;
+  box-shadow: 0 0 40px rgba(30, 144, 255, 0.3);
+}
+
+/* Overlay de aviso para orientação portrait — Ref: 03-TECH-STACK.md § 6.1 */
+#portrait-warning {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: #1a1a2e;
+  color: #ffffff;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+#portrait-warning .icon {
+  font-size: 3rem;
+}
+
+@media (orientation: portrait) {
+  #portrait-warning {
+    display: flex;
+  }
+
+  #app {
+    display: none;
+  }
+}

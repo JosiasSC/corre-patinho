@@ -1,6 +1,6 @@
 # Backlog — corre-patinho
 
-> Última atualização: 2026-04-24
+> Última atualização: 2026-04-25
 
 ## Referência Rápida
 
@@ -13,7 +13,7 @@
 | T-005 | Definir sistema de pontuação/score | ✅ Concluído | — |
 | T-006 | Criar spec 02-GAME-MECHANICS (mecânicas detalhadas) | ✅ Concluído | — |
 | T-007 | Criar spec 03-TECH-STACK (arquitetura técnica) | ✅ Concluído | — |
-| T-008 | Inicializar projeto Vite + TypeScript | 🟡 Pendente | Alta |
+| T-008 | Inicializar projeto Vite + TypeScript | ✅ Concluído | — |
 | T-009 | Implementar protótipo mínimo (Canvas 2D + tobogã reto + swipe) | 🟡 Pendente | Alta |
 | T-010 | Criar assets de sprites (patinho + cenário) | 🟡 Pendente | Alta |
 | T-011 | Implementar geração procedural do percurso | 🟡 Pendente | Alta |
@@ -41,7 +41,7 @@
 
 ### 🚀 Implementação — Setup
 
-- `[ ]` **T-008** — Inicializar projeto Vite + TypeScript: `npx create-vite`, configurar `tsconfig.json`, instalar `howler` e `vite-plugin-pwa`
+- `[x]` **T-008** — Inicializar projeto Vite + TypeScript: `npx create-vite`, configurar `tsconfig.json`, instalar `howler` e `vite-plugin-pwa`
 - `[ ]` **T-009** — Protótipo mínimo: canvas fullscreen, tobogã reto descendo (pseudo-3D), sprite do patinho, swipe básico. Validar que o gameplay loop funciona.
 
 ### 🎮 Implementação — Core

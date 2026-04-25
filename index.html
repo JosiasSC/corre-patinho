@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Corre Patinho — jogo casual inspirado no brinquedo Patinho Escorregador. Desvie das curvas do tobogã!" />
+    <meta name="theme-color" content="#1E90FF" />
+    <title>Corre Patinho</title>
+  </head>
+  <body>
+    <!-- Overlay portrait — Ref: 03-TECH-STACK.md § 6.1 -->
+    <div id="portrait-warning">
+      <span class="icon">📱🔄</span>
+      <p>Gire o dispositivo para<br /><strong>paisagem (landscape)</strong></p>
+    </div>
+
+    <div id="app">
+      <canvas id="game-canvas"></canvas>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
