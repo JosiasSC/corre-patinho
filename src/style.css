@@ -5,6 +5,10 @@
  * Ref: 03-TECH-STACK.md § 6
  */
 
+/* ---------------------------------------------------------------------------
+ * Reset & Base
+ * --------------------------------------------------------------------------- */
+
 * {
   margin: 0;
   padding: 0;
@@ -24,18 +28,37 @@ body {
   touch-action: none;
 }
 
+/* ---------------------------------------------------------------------------
+ * Letterboxing Background — Ref: 03-TECH-STACK.md § 6.2
+ * Gradiente temático ao redor do canvas quando há letterboxing.
+ * --------------------------------------------------------------------------- */
+
 #app {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Gradiente radial temático — céu + água do tobogã */
+  background:
+    radial-gradient(
+      ellipse at center,
+      #1e3a5f 0%,
+      #162d50 40%,
+      #1a1a2e 100%
+    );
 }
+
+/* ---------------------------------------------------------------------------
+ * Canvas — Ref: 03-TECH-STACK.md § 3, § 6
+ * --------------------------------------------------------------------------- */
 
 #game-canvas {
   display: block;
   border-radius: 4px;
-  box-shadow: 0 0 40px rgba(30, 144, 255, 0.3);
+  box-shadow:
+    0 0 40px rgba(30, 144, 255, 0.3),
+    0 0 80px rgba(30, 144, 255, 0.08);
   /* Prevenir scroll/zoom e seleção durante interação — Ref: § 2.3 */
   touch-action: none;
   -webkit-user-select: none;
@@ -43,27 +66,87 @@ body {
   cursor: pointer;
 }
 
-/* Overlay de aviso para orientação portrait — Ref: 03-TECH-STACK.md § 6.1 */
+/* ---------------------------------------------------------------------------
+ * Overlay de aviso para orientação portrait — Ref: 03-TECH-STACK.md § 6.1
+ *
+ * Tela cheia com animação do ícone de rotação, mostrada automaticamente
+ * quando o dispositivo está em portrait via media query CSS.
+ * --------------------------------------------------------------------------- */
+
 #portrait-warning {
   display: none;
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background-color: #1a1a2e;
+  /* Gradiente de fundo imersivo */
+  background:
+    radial-gradient(
+      ellipse at center bottom,
+      #1e3a5f 0%,
+      #1a1a2e 70%
+    );
   color: #ffffff;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 1.2rem;
   font-size: 1.2rem;
   text-align: center;
   padding: 2rem;
 }
 
-#portrait-warning .icon {
-  font-size: 3rem;
+/* Ícone animado de rotação */
+#portrait-warning .rotate-icon {
+  font-size: 4rem;
+  display: inline-block;
+  animation: rotateHint 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(30, 144, 255, 0.5));
 }
 
+@keyframes rotateHint {
+  0%   { transform: rotate(0deg);   opacity: 1;   }
+  25%  { transform: rotate(-15deg); opacity: 0.8; }
+  50%  { transform: rotate(90deg);  opacity: 1;   }
+  75%  { transform: rotate(90deg);  opacity: 1;   }
+  100% { transform: rotate(0deg);   opacity: 1;   }
+}
+
+/* Título no overlay portrait */
+#portrait-warning .title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #FFD700;
+  text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  margin-bottom: 0.25rem;
+}
+
+/* Texto descritivo */
+#portrait-warning .message {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 320px;
+}
+
+#portrait-warning .message strong {
+  color: #64B5F6;
+}
+
+/* Brilho decorativo de fundo */
+#portrait-warning::before {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(30, 144, 255, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Media query: mostrar overlay em portrait, esconder canvas */
 @media (orientation: portrait) {
   #portrait-warning {
     display: flex;

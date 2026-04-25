@@ -22,7 +22,7 @@
 | T-014 | Implementar menus (início, dificuldade, game over, high scores) | ✅ Concluído | — |
 | T-015 | Integrar Howler.js (música + SFX) | ✅ Concluído | — |
 | T-016 | Configurar PWA (service worker, manifest, offline) | ✅ Concluído | — |
-| T-017 | Implementar tela de orientação (aviso portrait → landscape) | 🟡 Pendente | Baixa |
+| T-017 | Implementar tela de orientação (aviso portrait → landscape) | ✅ Concluído | — |
 
 ## Grupos
 
@@ -56,7 +56,7 @@
 - `[x]` **T-014** — Menus: tela inicial, seleção de dificuldade, game over (score, recorde, seed, retry), high scores (top 10 por dificuldade)
 - `[x]` **T-015** — Áudio: integrar Howler.js, carregar sprites de áudio, música de fundo loop, SFX, estado muted em localStorage
 - `[x]` **T-016** — PWA: vite-plugin-pwa, manifest (landscape, fullscreen), service worker (cache-first), prompt de update
-- `[ ]` **T-017** — Layout: orientação landscape forçada, overlay portrait, letterboxing 16:9, max viewport desktop
+- `[x]` **T-017** — Layout: orientação landscape forçada, overlay portrait, letterboxing 16:9, max viewport desktop
 
 ## Mapa de Dependências
 

@@ -17,6 +17,7 @@ import { generateSeed } from '../utils/prng.ts';
 import { MenuRenderer } from '../ui/menus.ts';
 import { saveHighScore, getHighScores, getPersonalBest } from '../utils/storage.ts';
 import { AudioManager } from '../audio/audio.ts';
+import type { LayoutManager } from '../ui/layout.ts';
 
 /** Duração da pausa de morte (segundos). Ref: § 6.3 */
 const DEATH_PAUSE_DURATION = 1.0;
@@ -36,6 +37,7 @@ const CURVE_SIGNAL_DISTANCE = 350;
  */
 export class Game {
   private readonly canvas: HTMLCanvasElement;
+  private readonly layout: LayoutManager;
   private readonly input: InputManager;
   private readonly renderer: Renderer;
   private readonly menus: MenuRenderer;
@@ -63,10 +65,11 @@ export class Game {
   /** Estado anterior (para saber voltar de high-scores). */
   private previousState: 'title' | 'game-over' = 'title';
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, layout: LayoutManager) {
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas 2D context não disponível');
     this.canvas = canvas;
+    this.layout = layout;
     this.input = new InputManager(canvas);
     this.renderer = new Renderer(ctx, DEFAULT_CAMERA);
     this.menus = new MenuRenderer(ctx);
@@ -97,6 +100,9 @@ export class Game {
     this.lastTimestamp = 0;
     this.accumulator = 0;
     this.lastCheckedSegmentIndex = -1;
+
+    // Cursor escondido durante gameplay — Ref: § 6.3
+    this.layout.setPlaying(true);
 
     // Áudio: iniciar música se não muted
     if (!this.audio.muted) {
@@ -143,6 +149,7 @@ export class Game {
   stop(): void {
     cancelAnimationFrame(this.animFrameId);
     this.input.destroy();
+    this.layout.destroy();
     this.audio.stopMusic(0);
   }
 
@@ -293,6 +300,9 @@ export class Game {
   private onGameOver(): void {
     const { session } = this;
     session.state = 'game-over';
+
+    // Restaurar cursor no game over — Ref: § 6.3
+    this.layout.setPlaying(false);
 
     const difficulty = session.config.difficulty;
     this.personalBest = getPersonalBest(difficulty);
@@ -446,7 +456,9 @@ export class Game {
    */
   private setupClickHandler(canvas: HTMLCanvasElement): void {
     const handler = (e: MouseEvent | TouchEvent): void => {
-      // Inicializar áudio na primeira interação do usuário (Web Audio policy)
+      // Primeira interação do usuário:
+      // 1. Inicializar áudio (Web Audio policy)
+      // 2. Tentar fullscreen + orientation lock (Ref: § 6.1)
       if (!this.audio.initialized) {
         this.audio.init().then(() => {
           // Após init, aplicar estado muted e iniciar música se não muted
@@ -455,6 +467,9 @@ export class Game {
           }
         });
       }
+      // Tentar imersão (fullscreen + landscape lock) a cada interação
+      // até conseguir — seguro chamar múltiplas vezes
+      this.layout.requestImmersive();
 
       // Converter coordenadas do evento para espaço do canvas
       const rect = canvas.getBoundingClientRect();
@@ -560,6 +575,7 @@ export class Game {
       case 'menu':
         // Voltar ao título
         this.initSession();
+        this.layout.setPlaying(false);
         this.audio.playSfx('menuClick');
         // Reiniciar música se não muted
         if (!this.audio.muted) {
