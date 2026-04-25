@@ -82,6 +82,9 @@ export class HUD {
   private lifeShakeTimer = 0;
   private lastLives = 3;
 
+  /** Callback invocado ao alternar mute (para sincronizar com AudioManager). */
+  onMuteToggle: ((muted: boolean) => void) | null = null;
+
   constructor(ctx: CanvasRenderingContext2D) {
     this.ctx = ctx;
     this.muted = getMutedPreference();
@@ -139,6 +142,10 @@ export class HUD {
     ) {
       this.muted = !this.muted;
       setMutedPreference(this.muted);
+      // Notificar AudioManager via callback
+      if (this.onMuteToggle) {
+        this.onMuteToggle(this.muted);
+      }
       return true;
     }
     return false;

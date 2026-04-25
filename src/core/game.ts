@@ -16,6 +16,7 @@ import { DEFAULT_CAMERA } from '../rendering/camera.ts';
 import { generateSeed } from '../utils/prng.ts';
 import { MenuRenderer } from '../ui/menus.ts';
 import { saveHighScore, getHighScores, getPersonalBest } from '../utils/storage.ts';
+import { AudioManager } from '../audio/audio.ts';
 
 /** Duração da pausa de morte (segundos). Ref: § 6.3 */
 const DEATH_PAUSE_DURATION = 1.0;
@@ -38,6 +39,7 @@ export class Game {
   private readonly input: InputManager;
   private readonly renderer: Renderer;
   private readonly menus: MenuRenderer;
+  private readonly audio: AudioManager;
 
   private session!: GameSession;
   private track!: TrackGenerator;
@@ -68,6 +70,18 @@ export class Game {
     this.input = new InputManager(canvas);
     this.renderer = new Renderer(ctx, DEFAULT_CAMERA);
     this.menus = new MenuRenderer(ctx);
+    this.audio = AudioManager.instance();
+
+    // Conectar HUD mute toggle → AudioManager
+    this.renderer.hud.onMuteToggle = (muted: boolean) => {
+      this.audio.setMuted(muted);
+      if (!muted) {
+        // Ao desmutar, iniciar música se estiver em tela de menu ou jogando
+        this.audio.playMusic();
+      } else {
+        this.audio.stopMusic();
+      }
+    };
 
     this.setupClickHandler(canvas);
     this.initSession();
@@ -83,6 +97,11 @@ export class Game {
     this.lastTimestamp = 0;
     this.accumulator = 0;
     this.lastCheckedSegmentIndex = -1;
+
+    // Áudio: iniciar música se não muted
+    if (!this.audio.muted) {
+      this.audio.playMusic();
+    }
   }
 
   /** Inicia o loop de renderização (independente do estado). */
@@ -124,6 +143,7 @@ export class Game {
   stop(): void {
     cancelAnimationFrame(this.animFrameId);
     this.input.destroy();
+    this.audio.stopMusic(0);
   }
 
   // ---------------------------------------------------------------------------
@@ -241,6 +261,8 @@ export class Game {
       this.loseLife();
     } else {
       session.curvesCompleted++;
+      // SFX de curva bem-sucedida
+      this.audio.playSfx('curve');
     }
   }
 
@@ -263,6 +285,7 @@ export class Game {
     } else {
       session.state = 'dying';
       session.deathPauseTimer = DEATH_PAUSE_DURATION;
+      this.audio.playSfx('loseLife');
     }
   }
 
@@ -284,6 +307,14 @@ export class Game {
     // Atualizar personal best se bateu recorde
     if (this.isNewRecord) {
       this.personalBest = session.maxScore;
+    }
+
+    // Áudio: parar música, tocar SFX
+    this.audio.stopMusic();
+    if (this.isNewRecord) {
+      this.audio.playSfx('record');
+    } else {
+      this.audio.playSfx('gameOver');
     }
   }
 
@@ -415,6 +446,16 @@ export class Game {
    */
   private setupClickHandler(canvas: HTMLCanvasElement): void {
     const handler = (e: MouseEvent | TouchEvent): void => {
+      // Inicializar áudio na primeira interação do usuário (Web Audio policy)
+      if (!this.audio.initialized) {
+        this.audio.init().then(() => {
+          // Após init, aplicar estado muted e iniciar música se não muted
+          if (!this.audio.muted) {
+            this.audio.playMusic();
+          }
+        });
+      }
+
       // Converter coordenadas do evento para espaço do canvas
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
@@ -477,11 +518,13 @@ export class Game {
       case 'play':
         // Título → seleção de dificuldade
         this.session.state = 'difficulty-select';
+        this.audio.playSfx('menuClick');
         break;
 
       case 'select-difficulty':
         // Seleção → iniciar jogo
         this.selectedDifficulty = action.value;
+        this.audio.playSfx('menuClick');
         this.start(action.value);
         break;
 
@@ -494,25 +537,34 @@ export class Game {
         }
         this.viewingScoresDifficulty = this.selectedDifficulty;
         this.session.state = 'high-scores';
+        this.audio.playSfx('menuClick');
         break;
 
       case 'show-scores-tab':
         this.viewingScoresDifficulty = action.value;
+        this.audio.playSfx('menuClick');
         break;
 
       case 'back':
         // Voltar ao estado anterior
         this.session.state = this.previousState;
+        this.audio.playSfx('menuClick');
         break;
 
       case 'retry':
         // Retry com mesma dificuldade
+        this.audio.playSfx('menuClick');
         this.start(this.selectedDifficulty);
         break;
 
       case 'menu':
         // Voltar ao título
         this.initSession();
+        this.audio.playSfx('menuClick');
+        // Reiniciar música se não muted
+        if (!this.audio.muted) {
+          this.audio.playMusic();
+        }
         break;
     }
   }
