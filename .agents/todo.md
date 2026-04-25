@@ -15,7 +15,7 @@
 | T-007 | Criar spec 03-TECH-STACK (arquitetura técnica) | ✅ Concluído | — |
 | T-008 | Inicializar projeto Vite + TypeScript | ✅ Concluído | — |
 | T-009 | Implementar protótipo mínimo (Canvas 2D + tobogã reto + swipe) | ✅ Concluído | — |
-| T-010 | Criar assets de sprites (patinho + cenário) | 🟡 Pendente | Alta |
+| T-010 | Criar assets de sprites (patinho + cenário) | ✅ Concluído | — |
 | T-011 | Implementar geração procedural do percurso | 🟡 Pendente | Alta |
 | T-012 | Implementar sistema de input (swipe + teclado) | 🟡 Pendente | Alta |
 | T-013 | Implementar HUD (score, vidas, mute) | 🟡 Pendente | Média |
@@ -46,7 +46,7 @@
 
 ### 🎮 Implementação — Core
 
-- `[ ]` **T-010** — Criar/obter assets de sprites: patinho (idle, curva esquerda, curva direita, susto, queda), tobogã, cenário (árvores, nuvens, etc.)
+- `[x]` **T-010** — Criar/obter assets de sprites: patinho (idle, curva esquerda, curva direita, susto, queda), tobogã, cenário (árvores, nuvens, etc.)
 - `[ ]` **T-011** — Geração procedural: PRNG seedable, segmentos (reto/curva), parâmetros por dificuldade, rampa de dificuldade progressiva
 - `[ ]` **T-012** — Input: captura de touch/swipe full-screen, normalização, suporte a teclado desktop, inércia (~200ms)
 

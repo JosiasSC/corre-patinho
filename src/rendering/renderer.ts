@@ -2,7 +2,7 @@
  * Canvas 2D pseudo-3D — renderização principal.
  *
  * Renderiza o tobogã como scanlines horizontais com perspectiva,
- * o patinho na base da tela, e HUD mínimo.
+ * o patinho na base da tela, cenário decorativo e HUD mínimo.
  *
  * Ref: 03-TECH-STACK.md § 3
  * Ref: 03-TECH-STACK.md § 8 — src/rendering/renderer.ts
@@ -12,6 +12,7 @@ import type { GameSession, PlayerState, TrackSegment } from '../types/index.ts';
 import { projectTrack } from './camera.ts';
 import type { CameraConfig } from './camera.ts';
 import { drawDuck, drawDuckIcon } from './sprites.ts';
+import { drawCloud, drawTree, drawFlower, drawMountain, drawSun, drawGrassTuft } from './scenery.ts';
 
 // ---------------------------------------------------------------------------
 // Cores do tobogã (estilo água/piscina)
@@ -58,7 +59,7 @@ export class Renderer {
     const w = ctx.canvas.width;
     const h = ctx.canvas.height;
 
-    // 1. Céu
+    // 1. Céu + cenário de fundo
     this.drawSky(w, h);
 
     // 2. Tobogã pseudo-3D
@@ -71,13 +72,16 @@ export class Renderer {
     );
     this.drawRoad(projected, w, h);
 
-    // 3. Patinho
+    // 3. Árvores e flores roadside
+    this.drawRoadsideScenery(projected, w);
+
+    // 4. Patinho
     const duckX = w / 2 + player.lean * w * 0.15;
     const duckY = h * 0.88;
     const duckSize = h * 0.18;
-    drawDuck(ctx, duckX, duckY, duckSize, player.lean);
+    drawDuck(ctx, duckX, duckY, duckSize, player.pose, player.lean);
 
-    // 4. HUD
+    // 5. HUD
     this.drawHUD(session, w, h);
   }
 
@@ -101,7 +105,7 @@ export class Renderer {
     ctx.fillRect(w * 0.74, h * 0.38, w * 0.04, h * 0.62);
 
     // Patinho
-    drawDuck(ctx, w / 2, h * 0.75, h * 0.22, 0);
+    drawDuck(ctx, w / 2, h * 0.75, h * 0.22, 'idle', 0);
 
     // Título
     ctx.fillStyle = '#FFFFFF';
@@ -198,22 +202,21 @@ export class Renderer {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, w, horizonY);
 
-    // Nuvens simples (decorativas)
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-    const cloudY = horizonY * 0.35;
-    this.drawCloud(w * 0.15, cloudY, w * 0.12);
-    this.drawCloud(w * 0.55, cloudY * 0.7, w * 0.15);
-    this.drawCloud(w * 0.82, cloudY * 1.1, w * 0.1);
-  }
+    const now = Date.now();
 
-  private drawCloud(x: number, y: number, size: number): void {
-    const { ctx } = this;
-    ctx.beginPath();
-    ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
-    ctx.arc(x + size * 0.35, y - size * 0.15, size * 0.4, 0, Math.PI * 2);
-    ctx.arc(x + size * 0.6, y, size * 0.35, 0, Math.PI * 2);
-    ctx.arc(x - size * 0.3, y + size * 0.05, size * 0.35, 0, Math.PI * 2);
-    ctx.fill();
+    // Sol (canto superior direito)
+    drawSun(ctx, w * 0.88, horizonY * 0.28, 1.8, now);
+
+    // Montanhas no horizonte
+    drawMountain(ctx, w * 0.12, horizonY, 1.2, 210);
+    drawMountain(ctx, w * 0.35, horizonY, 1.6, 225);
+    drawMountain(ctx, w * 0.7, horizonY, 1.0, 200);
+
+    // Nuvens
+    const cloudY = horizonY * 0.35;
+    drawCloud(ctx, w * 0.12, cloudY, 0.7, 0.7);
+    drawCloud(ctx, w * 0.5, cloudY * 0.65, 0.9, 0.8);
+    drawCloud(ctx, w * 0.8, cloudY * 1.1, 0.55, 0.65);
   }
 
   private drawRoad(
@@ -263,6 +266,62 @@ export class Renderer {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
         const lineW = seg.roadWidth * 0.02;
         ctx.fillRect(centerX - lineW / 2, y, lineW, lineHeight);
+      }
+    }
+  }
+
+  /**
+   * Desenha cenário decorativo nas margens da pista (árvores, flores, grama).
+   * Renderiza apenas nos segmentos mais próximos para performance.
+   */
+  private drawRoadsideScenery(
+    projected: ReturnType<typeof projectTrack>,
+    w: number,
+  ): void {
+    const { ctx } = this;
+
+    // Só decorar segmentos com escala visível (próximos)
+    for (let i = projected.length - 1; i >= 0; i--) {
+      const seg = projected[i];
+      if (seg.scale < 0.005 || seg.scale > 0.4) continue;
+
+      const roadHalfW = seg.roadWidth / 2;
+      const borderW = seg.roadWidth * 0.12;
+      const leftEdge = seg.offsetX - roadHalfW - borderW;
+      const rightEdge = seg.offsetX + roadHalfW + borderW;
+
+      // Árvores a cada ~6 scanlines (evitar overcrowding)
+      if (i % 18 === 0 && seg.scale > 0.01) {
+        const treeScale = seg.scale * 2.5;
+        // Árvore à esquerda
+        if (leftEdge > 30) {
+          drawTree(ctx, leftEdge - 25 * treeScale, seg.screenY, treeScale, i % 3);
+        }
+        // Árvore à direita
+        if (rightEdge < w - 30) {
+          drawTree(ctx, rightEdge + 25 * treeScale, seg.screenY, treeScale, (i + 1) % 3);
+        }
+      }
+
+      // Flores a cada ~10 scanlines
+      if (i % 10 === 3 && seg.scale > 0.015) {
+        const flowerScale = seg.scale * 12;
+        const hues = [0, 45, 280, 320, 200]; // vermelho, laranja, roxo, rosa, azul
+        const hue = hues[i % 5];
+        if (leftEdge > 15) {
+          drawFlower(ctx, leftEdge - 8 * flowerScale, seg.screenY, flowerScale, hue);
+        }
+        if (rightEdge < w - 15) {
+          drawFlower(ctx, rightEdge + 10 * flowerScale, seg.screenY, flowerScale, (hue + 120) % 360);
+        }
+      }
+
+      // Tufos de grama
+      if (i % 7 === 0 && seg.scale > 0.02) {
+        const grassScale = seg.scale * 6;
+        if (leftEdge > 10) {
+          drawGrassTuft(ctx, leftEdge - 4 * grassScale, seg.screenY, grassScale);
+        }
       }
     }
   }

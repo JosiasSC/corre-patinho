@@ -21,6 +21,12 @@ export type CurveDirection = 'left' | 'right' | 'none';
 /** Tipo de segmento do tobogã. */
 export type SegmentType = 'straight' | 'curve';
 
+/**
+ * Pose visual do patinho.
+ * Ref: 03-TECH-STACK.md § 3.2 — Animações via troca de frames/sprites.
+ */
+export type DuckPose = 'idle' | 'leanLeft' | 'leanRight' | 'scared' | 'falling';
+
 // ---------------------------------------------------------------------------
 // Track
 // ---------------------------------------------------------------------------
@@ -160,6 +166,8 @@ export interface PlayerState {
   smoothInput: number;
   /** Inclinação visual do patinho (-1 a +1). */
   lean: number;
+  /** Pose visual atual do patinho. */
+  pose: DuckPose;
 }
 
 // ---------------------------------------------------------------------------

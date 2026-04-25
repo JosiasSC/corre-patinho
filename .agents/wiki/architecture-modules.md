@@ -12,7 +12,8 @@ O game loop é orquestrado por `Game` (`src/core/game.ts`):
 2. `updatePhysics(session, player, config, dt)` — aplica velocidade, inércia, avança posição
 3. `updateCurrentSegment()` — localiza segmento atual no track
 4. `checkCurrentCurve()` — verifica tolerância de curva (uma vez por segmento, a 55% de progresso)
-5. `Renderer.renderFrame()` — projeta e desenha tudo
+5. `computeDuckPose()` — determina pose visual do patinho (idle/lean/scared/falling)
+6. `Renderer.renderFrame()` — projeta e desenha tudo
 
 **Timestep:** fixed dt (1/60s) com acumulador. Rendering desacoplado da lógica.
 
@@ -32,14 +33,15 @@ ready → playing → dying → playing (respawn)
 
 | Módulo | Arquivo | Responsabilidade |
 |---|---|---|
-| Types | `src/types/index.ts` | Interfaces, tipos, `DIFFICULTY_CONFIGS` |
+| Types | `src/types/index.ts` | Interfaces, tipos, `DuckPose`, `DIFFICULTY_CONFIGS` |
 | PRNG | `src/utils/prng.ts` | Mulberry32 seedable |
 | Track | `src/core/track.ts` | `TrackGenerator` — segmentos on-demand, rampa, checkpoints |
 | Physics | `src/core/physics.ts` | `updatePhysics`, `checkCurve` — velocidade, inércia, tolerância |
 | Input | `src/core/input.ts` | `InputManager` — touch/swipe + teclado + mouse |
 | Camera | `src/rendering/camera.ts` | `projectTrack` — scanlines pseudo-3D |
-| Sprites | `src/rendering/sprites.ts` | `drawDuck`, `drawDuckIcon` — Canvas 2D procedural |
-| Renderer | `src/rendering/renderer.ts` | `Renderer` — céu, tobogã, patinho, HUD |
+| Sprites | `src/rendering/sprites.ts` | `drawDuck(pose)`, `drawDuckIcon` — Canvas 2D com 5 poses |
+| Scenery | `src/rendering/scenery.ts` | Cenário: nuvens, árvores, flores, montanhas, sol, grama |
+| Renderer | `src/rendering/renderer.ts` | `Renderer` — céu, cenário, tobogã, patinho, HUD |
 | Game | `src/core/game.ts` | `Game` — loop, estados, orquestração |
 | Main | `src/main.ts` | Entry point, canvas 1280×720, letterboxing |
 
@@ -57,7 +59,8 @@ Input → rawInput → Physics (inércia) → smoothInput → Camera → Rendere
 - **Geração on-demand** de segmentos — `TrackGenerator.ensureSegments()` gera lookahead de 40 segmentos
 - **Verificação de curva tardia** — checada a 55% do segmento para dar tempo de ajustar
 - **Score monotônico** — `maxScore` nunca regride (mesmo com respawn no checkpoint)
-- **Sprite procedural** — patinho desenhado com Canvas 2D (temporário até T-010)
+- **Sprite procedural aprimorado** — patinho desenhado com Canvas 2D em 5 poses: idle, leanLeft, leanRight, scared, falling (T-010)
+- **Cenário Canvas 2D** — sol animado, montanhas, nuvens, árvores, flores e grama nas margens da pista (T-010)
 - **erasableSyntaxOnly** — TypeScript 6+ não permite `private` em parâmetros de construtor; campos devem ser declarados explicitamente
 
 ## Fontes

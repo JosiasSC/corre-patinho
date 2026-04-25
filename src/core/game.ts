@@ -6,7 +6,7 @@
  * Ref: 03-TECH-STACK.md § 8 — src/core/game.ts
  */
 
-import type { GameConfig, GameSession, PlayerState, TrackSegment } from '../types/index.ts';
+import type { GameConfig, GameSession, PlayerState, TrackSegment, DuckPose } from '../types/index.ts';
 import { DIFFICULTY_CONFIGS } from '../types/index.ts';
 import { TrackGenerator } from './track.ts';
 import { updatePhysics, checkCurve } from './physics.ts';
@@ -146,6 +146,7 @@ export class Game {
       rawInput: 0,
       smoothInput: 0,
       lean: 0,
+      pose: 'idle',
     };
   }
 
@@ -175,6 +176,9 @@ export class Game {
 
     // Verificar checkpoints
     this.updateCheckpoints();
+
+    // Calcular pose visual do patinho
+    player.pose = this.computeDuckPose();
   }
 
   private updateCurrentSegment(): void {
@@ -255,9 +259,34 @@ export class Game {
     this.player.rawInput = 0;
     this.player.smoothInput = 0;
     this.player.lean = 0;
+    this.player.pose = 'idle';
 
     // Garantir segmentos
     track.ensureSegments(session.currentSegmentIndex);
+  }
+
+  /**
+   * Calcula a pose visual do patinho baseada no estado do jogo.
+   * Ref: 03-TECH-STACK.md § 3.2
+   */
+  private computeDuckPose(): DuckPose {
+    const { session, player } = this;
+
+    if (session.state === 'dying') {
+      // Primeiros 500ms: susto, depois: queda
+      const elapsed = DEATH_PAUSE_DURATION - session.deathPauseTimer;
+      return elapsed < 0.35 ? 'scared' : 'falling';
+    }
+
+    if (session.state === 'game-over') {
+      return 'falling';
+    }
+
+    // Playing — baseado no lean
+    const leanThreshold = 0.15;
+    if (player.lean < -leanThreshold) return 'leanLeft';
+    if (player.lean > leanThreshold) return 'leanRight';
+    return 'idle';
   }
 
   // ---------------------------------------------------------------------------
@@ -280,6 +309,8 @@ export class Game {
     }
 
     if (session.state === 'dying') {
+      // Atualizar pose durante dying (computada a cada render)
+      this.player.pose = this.computeDuckPose();
       this.renderGameFrame();
       const intensity = session.deathPauseTimer / DEATH_PAUSE_DURATION;
       renderer.renderDeathFlash(intensity);
