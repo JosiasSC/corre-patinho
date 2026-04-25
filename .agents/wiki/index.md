@@ -10,6 +10,7 @@ Conhecimento cross-cutting sintetizado do projeto `corre-patinho`. Cada página 
 |---|---|
 | [decisions-consolidated.md](./decisions-consolidated.md) | Decisões vigentes consolidadas |
 | [decisions-log.md](./decisions-log.md) | Registro cronológico de decisões |
+| [architecture-modules.md](./architecture-modules.md) | Arquitetura de módulos implementados, game loop, máquina de estados |
 
 ## Como usar
 - **Agentes IA:** Leia este index para contextualização rápida antes de tarefas.

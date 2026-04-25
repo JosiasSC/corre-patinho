@@ -1,82 +1,63 @@
 /**
  * Entry point — inicialização do jogo Corre Patinho.
  *
+ * Configura o canvas 16:9, instancia o Game e inicia o loop.
  * Ref: 03-TECH-STACK.md § 8 — src/main.ts
  */
 
 import './style.css';
+import { Game } from './core/game.ts';
 
-/**
- * Inicializa o canvas do jogo e exibe uma tela de placeholder
- * até que o game loop seja implementado (T-009).
- */
+/** Resolução interna do canvas (16:9). */
+const INTERNAL_WIDTH = 1280;
+const INTERNAL_HEIGHT = 720;
+
+/** Inicializa o jogo. */
 function init(): void {
   const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
   if (!canvas) {
     throw new Error('Canvas element #game-canvas não encontrado');
   }
 
-  const ctx = canvas.getContext('2d');
-  if (!ctx) {
-    throw new Error('Não foi possível obter contexto 2D do canvas');
-  }
+  // Configurar resolução interna fixa
+  canvas.width = INTERNAL_WIDTH;
+  canvas.height = INTERNAL_HEIGHT;
 
-  // Ajustar canvas para preencher o viewport
+  // Ajustar tamanho visual no DOM (CSS) mantendo 16:9
   resizeCanvas(canvas);
   window.addEventListener('resize', () => resizeCanvas(canvas));
 
-  // Tela de placeholder — será substituída pelo game loop em T-009
-  drawPlaceholder(ctx, canvas);
+  // Esconder cursor durante gameplay (Ref: 03-TECH-STACK.md § 6.3)
+  canvas.style.cursor = 'pointer';
+
+  // Criar e iniciar o jogo
+  const game = new Game(canvas);
+  game.run();
 }
 
-/** Redimensiona o canvas mantendo aspect ratio 16:9. */
+/**
+ * Redimensiona o canvas CSS mantendo aspect ratio 16:9.
+ * A resolução interna é fixa (1280x720); o CSS escala.
+ */
 function resizeCanvas(canvas: HTMLCanvasElement): void {
   const targetAspect = 16 / 9;
   const windowAspect = window.innerWidth / window.innerHeight;
 
-  let width: number;
-  let height: number;
+  let displayWidth: number;
+  let displayHeight: number;
 
   if (windowAspect > targetAspect) {
     // Janela mais larga que 16:9 — letterbox horizontal
-    height = Math.min(window.innerHeight, 720);
-    width = height * targetAspect;
+    displayHeight = Math.min(window.innerHeight, 720);
+    displayWidth = displayHeight * targetAspect;
   } else {
     // Janela mais alta que 16:9 — letterbox vertical
-    width = Math.min(window.innerWidth, 1280);
-    height = width / targetAspect;
+    displayWidth = Math.min(window.innerWidth, 1280);
+    displayHeight = displayWidth / targetAspect;
   }
 
-  canvas.width = Math.round(width);
-  canvas.height = Math.round(height);
-  canvas.style.width = `${Math.round(width)}px`;
-  canvas.style.height = `${Math.round(height)}px`;
-
-  // Redesenhar após resize
-  const ctx = canvas.getContext('2d');
-  if (ctx) drawPlaceholder(ctx, canvas);
-}
-
-/** Desenha tela de placeholder enquanto o jogo não está implementado. */
-function drawPlaceholder(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement): void {
-  // Fundo com gradiente azul (água do tobogã)
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#87CEEB');
-  gradient.addColorStop(1, '#1E90FF');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Título
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = `bold ${Math.round(canvas.height * 0.08)}px sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('🐥 Corre Patinho!', canvas.width / 2, canvas.height * 0.4);
-
-  // Subtítulo
-  ctx.font = `${Math.round(canvas.height * 0.035)}px sans-serif`;
-  ctx.fillStyle = '#FFFFFFCC';
-  ctx.fillText('Projeto inicializado — aguardando T-009', canvas.width / 2, canvas.height * 0.55);
+  canvas.style.width = `${Math.round(displayWidth)}px`;
+  canvas.style.height = `${Math.round(displayHeight)}px`;
 }
 
 // Inicializar quando o DOM estiver pronto

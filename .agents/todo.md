@@ -14,7 +14,7 @@
 | T-006 | Criar spec 02-GAME-MECHANICS (mecânicas detalhadas) | ✅ Concluído | — |
 | T-007 | Criar spec 03-TECH-STACK (arquitetura técnica) | ✅ Concluído | — |
 | T-008 | Inicializar projeto Vite + TypeScript | ✅ Concluído | — |
-| T-009 | Implementar protótipo mínimo (Canvas 2D + tobogã reto + swipe) | 🟡 Pendente | Alta |
+| T-009 | Implementar protótipo mínimo (Canvas 2D + tobogã reto + swipe) | ✅ Concluído | — |
 | T-010 | Criar assets de sprites (patinho + cenário) | 🟡 Pendente | Alta |
 | T-011 | Implementar geração procedural do percurso | 🟡 Pendente | Alta |
 | T-012 | Implementar sistema de input (swipe + teclado) | 🟡 Pendente | Alta |
@@ -42,7 +42,7 @@
 ### 🚀 Implementação — Setup
 
 - `[x]` **T-008** — Inicializar projeto Vite + TypeScript: `npx create-vite`, configurar `tsconfig.json`, instalar `howler` e `vite-plugin-pwa`
-- `[ ]` **T-009** — Protótipo mínimo: canvas fullscreen, tobogã reto descendo (pseudo-3D), sprite do patinho, swipe básico. Validar que o gameplay loop funciona.
+- `[x]` **T-009** — Protótipo mínimo: canvas fullscreen, tobogã reto descendo (pseudo-3D), sprite do patinho, swipe básico. Validar que o gameplay loop funciona.
 
 ### 🎮 Implementação — Core
 
