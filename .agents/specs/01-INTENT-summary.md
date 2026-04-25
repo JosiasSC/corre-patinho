@@ -34,8 +34,8 @@ Jogo de reflexo/habilidade em **primeira pessoa**: o jogador controla um patinho
 
 - **Linguagem:** TypeScript
 - **Plataforma:** PWA (mobile-first — smartphones e tablets)
-- **Renderização:** A definir
-- **Build/tooling:** A definir
+- **Renderização:** Canvas 2D pseudo-3D (ver `03-TECH-STACK.md`)
+- **Build/tooling:** Vite (ver `03-TECH-STACK.md`)
 
 ## Módulos Preliminares
 
@@ -47,8 +47,8 @@ TypeScript por familiaridade; PWA para alcance web + experiência app; perspecti
 
 ## Pendências / A Definir
 
-- Mecânica exata de input (gestos, botões, slider)
-- Engine de renderização (Canvas 2D, WebGL, framework de jogos)
-- Build tooling (Vite, etc.)
-- Algoritmo de geração procedural do percurso
-- Sistema de pontuação
+- ~~Mecânica exata de input~~ → `02-GAME-MECHANICS.md § 2`
+- ~~Engine de renderização~~ → `03-TECH-STACK.md § 3`
+- ~~Build tooling~~ → `03-TECH-STACK.md § 2`
+- ~~Algoritmo de geração procedural~~ → `02-GAME-MECHANICS.md § 3`
+- ~~Sistema de pontuação~~ → `02-GAME-MECHANICS.md § 5`

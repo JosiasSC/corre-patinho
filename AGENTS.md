@@ -12,6 +12,8 @@
 | Spec | Escopo |
 |---|---|
 | `01-INTENT.md` | Domínio, glossário, decisões iniciais, estrutura de módulos |
+| `02-GAME-MECHANICS.md` | Controles, geração procedural, física, pontuação, vidas |
+| `03-TECH-STACK.md` | Vite, Canvas 2D, Howler.js, PWA, estrutura de diretórios |
 
 Todas as specs vivem em `.agents/specs/`. Cada spec tem um **summary** (`*-summary.md`, ~3KB) — ler o summary primeiro; a spec completa é para consulta sob demanda de seções específicas.
 

@@ -14,5 +14,5 @@ Este diretório contém as especificações autoritativas do projeto.
 | Nº | Spec | Escopo | Status |
 |---|---|---|---|
 | 01 | `01-INTENT.md` | Domínio, glossário, decisões iniciais, mecânicas, stack | 🟢 Definido |
-
-> Specs serão adicionadas conforme o projeto for especificado.
+| 02 | `02-GAME-MECHANICS.md` | Controles, geração procedural, física, pontuação, vidas | 🟢 Definido |
+| 03 | `03-TECH-STACK.md` | Vite, Canvas 2D, Howler.js, PWA, estrutura de diretórios | 🟢 Definido |

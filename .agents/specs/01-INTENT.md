@@ -36,13 +36,13 @@ No jogo digital, o jogador controla um patinho descendo por um tobogã (escorreg
 ### § 3.2 — Controles
 
 - Interação principal via **touch/swipe** (mobile) ou **mouse/teclado** (desktop)
-- A mecânica exata de input (gestos, botões, slider) será detalhada em spec posterior
+- Detalhes em `02-GAME-MECHANICS.md § 2`
 
 ### § 3.3 — Geração de Percurso
 
 - O percurso do tobogã é **gerado proceduralmente** a cada partida
 - Os parâmetros da geração (quantidade de curvas, severidade, comprimento) variam conforme o nível de dificuldade
-- Detalhes do algoritmo de geração serão especificados em spec posterior
+- Detalhes do algoritmo de geração em `02-GAME-MECHANICS.md § 3`
 
 ## § 4 — Níveis de Dificuldade
 
@@ -61,8 +61,8 @@ O jogo possui **3 níveis de dificuldade**:
 | **Linguagem** | TypeScript |
 | **Plataforma** | Web (PWA) |
 | **Dispositivos-alvo** | Smartphones e tablets (mobile-first), com suporte a desktop |
-| **Renderização** | A definir (Canvas 2D, WebGL ou framework de jogos — será definido em spec posterior) |
-| **Build/tooling** | A definir (Vite, webpack, etc. — será definido em spec posterior) |
+| **Renderização** | Canvas 2D com pseudo-3D (detalhes em `03-TECH-STACK.md § 3`) |
+| **Build/tooling** | Vite (detalhes em `03-TECH-STACK.md § 2`) |
 
 ### § 5.1 — Justificativa
 
@@ -99,9 +99,9 @@ O jogo possui **3 níveis de dificuldade**:
 
 Itens identificados que podem ser explorados em versões futuras:
 
-- Sistema de pontuação / recordes
 - Personalização visual do patinho (cores, acessórios)
 - Modos multiplayer (corrida lado a lado)
-- Efeitos sonoros temáticos do brinquedo original (música alegre, sons do patinho)
 - Animação do patinho subindo a escada (referência ao brinquedo original) como tela de loading
 - Progressão de fases com dificuldade crescente dentro de cada nível
+- Controle via acelerômetro (opção alternativa de input)
+- Suporte a gamepad e switch (acessibilidade)

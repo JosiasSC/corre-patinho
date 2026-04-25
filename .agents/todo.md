@@ -6,41 +6,70 @@
 
 | ID | Título | Status | Prioridade |
 |---|---|---|---|
-| T-001 | Definir mecânica de input (controles) | 🟡 Pendente | Alta |
-| T-002 | Escolher engine de renderização | 🟡 Pendente | Alta |
-| T-003 | Definir tooling de build (Vite, etc.) | 🟡 Pendente | Alta |
-| T-004 | Especificar algoritmo de geração procedural do percurso | 🟡 Pendente | Alta |
-| T-005 | Definir sistema de pontuação/score | 🟡 Pendente | Média |
-| T-006 | Criar spec 02-GAME-MECHANICS (mecânicas detalhadas) | 🟡 Pendente | Alta |
-| T-007 | Criar spec 03-TECH-STACK (arquitetura técnica) | 🟡 Pendente | Alta |
+| T-001 | Definir mecânica de input (controles) | ✅ Concluído | — |
+| T-002 | Escolher engine de renderização | ✅ Concluído | — |
+| T-003 | Definir tooling de build (Vite, etc.) | ✅ Concluído | — |
+| T-004 | Especificar algoritmo de geração procedural do percurso | ✅ Concluído | — |
+| T-005 | Definir sistema de pontuação/score | ✅ Concluído | — |
+| T-006 | Criar spec 02-GAME-MECHANICS (mecânicas detalhadas) | ✅ Concluído | — |
+| T-007 | Criar spec 03-TECH-STACK (arquitetura técnica) | ✅ Concluído | — |
+| T-008 | Inicializar projeto Vite + TypeScript | 🟡 Pendente | Alta |
+| T-009 | Implementar protótipo mínimo (Canvas 2D + tobogã reto + swipe) | 🟡 Pendente | Alta |
+| T-010 | Criar assets de sprites (patinho + cenário) | 🟡 Pendente | Alta |
+| T-011 | Implementar geração procedural do percurso | 🟡 Pendente | Alta |
+| T-012 | Implementar sistema de input (swipe + teclado) | 🟡 Pendente | Alta |
+| T-013 | Implementar HUD (score, vidas, mute) | 🟡 Pendente | Média |
+| T-014 | Implementar menus (início, dificuldade, game over, high scores) | 🟡 Pendente | Média |
+| T-015 | Integrar Howler.js (música + SFX) | 🟡 Pendente | Média |
+| T-016 | Configurar PWA (service worker, manifest, offline) | 🟡 Pendente | Média |
+| T-017 | Implementar tela de orientação (aviso portrait → landscape) | 🟡 Pendente | Baixa |
 
 ## Grupos
 
-### 🎮 Specs Pendentes
+### ✅ Especificação (Concluído)
 
-- `[ ]` **T-006** — Criar `02-GAME-MECHANICS.md`: detalhar mecânica de input (T-001), algoritmo de geração de percurso (T-004), física da descida, sistema de pontuação (T-005)
-- `[ ]` **T-007** — Criar `03-TECH-STACK.md`: engine de renderização (T-002), tooling de build (T-003), estrutura de diretórios do código, dependências
+- `[x]` **T-006** — Criar `02-GAME-MECHANICS.md`: mecânica de input (T-001), algoritmo de geração de percurso (T-004), física da descida, sistema de pontuação (T-005), sistema de vidas
+- `[x]` **T-007** — Criar `03-TECH-STACK.md`: engine de renderização (T-002), tooling de build (T-003), estrutura de diretórios, dependências
 
-### 🏗️ Decisões Técnicas Pendentes
+### 🏗️ Decisões Técnicas (Concluído)
 
-- `[ ]` **T-001** — Definir mecânica de input: touch/swipe, botões, slider ou combinação
-- `[ ]` **T-002** — Escolher engine de renderização: Canvas 2D, WebGL, Three.js, Phaser, Babylon.js ou outro
-- `[ ]` **T-003** — Definir tooling de build: Vite, webpack, etc.
+- `[x]` **T-001** — Input: swipe lateral contínuo (mobile) + setas/A-D (desktop) → `02-GAME-MECHANICS.md § 2`
+- `[x]` **T-002** — Engine: Canvas 2D pseudo-3D → `03-TECH-STACK.md § 3`
+- `[x]` **T-003** — Build: Vite + vite-plugin-pwa → `03-TECH-STACK.md § 2`
+- `[x]` **T-004** — Percurso infinito, ~2min, seed compartilhável → `02-GAME-MECHANICS.md § 3`
+- `[x]` **T-005** — Score: distância percorrida, localStorage, top 10 por dificuldade → `02-GAME-MECHANICS.md § 5`
 
-### 📐 Design de Jogo
+### 🚀 Implementação — Setup
 
-- `[ ]` **T-004** — Especificar algoritmo de geração procedural: parâmetros por dificuldade, seed, validação de percurso jogável
-- `[ ]` **T-005** — Definir sistema de pontuação: critérios (tempo, curvas acertadas, distância), persistência local
+- `[ ]` **T-008** — Inicializar projeto Vite + TypeScript: `npx create-vite`, configurar `tsconfig.json`, instalar `howler` e `vite-plugin-pwa`
+- `[ ]` **T-009** — Protótipo mínimo: canvas fullscreen, tobogã reto descendo (pseudo-3D), sprite do patinho, swipe básico. Validar que o gameplay loop funciona.
+
+### 🎮 Implementação — Core
+
+- `[ ]` **T-010** — Criar/obter assets de sprites: patinho (idle, curva esquerda, curva direita, susto, queda), tobogã, cenário (árvores, nuvens, etc.)
+- `[ ]` **T-011** — Geração procedural: PRNG seedable, segmentos (reto/curva), parâmetros por dificuldade, rampa de dificuldade progressiva
+- `[ ]` **T-012** — Input: captura de touch/swipe full-screen, normalização, suporte a teclado desktop, inércia (~200ms)
+
+### 🖼️ Implementação — UI & Polish
+
+- `[ ]` **T-013** — HUD: score (distância), vidas (ícones), botão mute, sinalização de curvas (modo Fácil com formas + cores)
+- `[ ]` **T-014** — Menus: tela inicial, seleção de dificuldade, game over (score, recorde, seed, retry), high scores (top 10 por dificuldade)
+- `[ ]` **T-015** — Áudio: integrar Howler.js, carregar sprites de áudio, música de fundo loop, SFX, estado muted em localStorage
+- `[ ]` **T-016** — PWA: vite-plugin-pwa, manifest (landscape, fullscreen), service worker (cache-first), prompt de update
+- `[ ]` **T-017** — Layout: orientação landscape forçada, overlay portrait, letterboxing 16:9, max viewport desktop
 
 ## Mapa de Dependências
 
 ```mermaid
 graph LR
-  T-001 --> T-006
-  T-004 --> T-006
-  T-005 --> T-006
-  T-002 --> T-007
-  T-003 --> T-007
-  T-006 --> IMPL["Implementação"]
-  T-007 --> IMPL
+  T-008 --> T-009
+  T-009 --> T-011
+  T-009 --> T-012
+  T-010 --> T-009
+  T-011 --> T-013
+  T-012 --> T-013
+  T-013 --> T-014
+  T-014 --> T-015
+  T-015 --> T-016
+  T-016 --> T-017
 ```
